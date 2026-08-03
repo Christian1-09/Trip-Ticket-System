@@ -1,0 +1,68 @@
+// features/admin/data/mock/trip_ticket_log_mock_data.dart
+import '../models/trip_ticket_log_model.dart';
+
+final tripTicketLogMockData = [
+  const TripTicketLogModel(
+    dateOfTravel: '2025-08-22',
+    driver: 'STEVE P. BARORO',
+    vehicle: 'SJJ 963',
+    purpose: 'TO CARRY DOCUMENTS',
+    destination: 'DAPITAN CITY',
+    passengers: 'REYMARK D. BALANCAR',
+    timestamp: '22/08/2025 14:30',
+  ),
+  const TripTicketLogModel(
+    dateOfTravel: '2025-08-22',
+    driver: 'RENERO P.LUMANDOS',
+    vehicle: 'CANTER VEHICLE',
+    purpose: 'TO CARRY FEEDS',
+    destination: 'SANAO, KATIPUNAN ZN',
+    passengers: 'REYMARK D. BALANCAR',
+    timestamp: '22/08/2025 14:30',
+  ),
+  const TripTicketLogModel(
+    dateOfTravel: '2025-08-22',
+    driver: 'RENERO P.LUMANDOS',
+    vehicle: '100110 HI-ACE VAN',
+    purpose: 'TO CARRY DOCUMENT FOR SIGNATURE',
+    destination: 'JRMSU DAPITAN CITY',
+    passengers: 'REYMARK D. BALANCAR',
+    timestamp: '22/08/2025 14:30',
+  ),
+  const TripTicketLogModel(
+    dateOfTravel: '2025-08-22',
+    driver: 'RENERO P.LUMANDOS',
+    vehicle: 'SJJ963 INNOVA',
+    purpose: 'TO PICK-UP OFFICE SUPPLIES',
+    destination: 'DEPOT IPIL, ZAMBOSIBUGAY',
+    passengers: 'RICKY REGANON',
+    timestamp: '22/08/2025 14:30',
+  ),
+  const TripTicketLogModel(
+    dateOfTravel: '2025-08-22',
+    driver: 'STEVE P. BARORO',
+    vehicle: '100110 HI-ACE VAN',
+    purpose: 'TO CARRY DOCUMENT FOR SIGNATURE',
+    destination: 'JRMSU DAPITAN CITY',
+    passengers: 'JOSEPHINE OXINO',
+    timestamp: '22/08/2025 14:30',
+  ),
+  const TripTicketLogModel(
+    dateOfTravel: '2025-08-22',
+    driver: 'STEVE P. BARORO',
+    vehicle: 'SJJ963 INNOVA',
+    purpose: 'TO CARRY DOCUMENT FOR URGENT SIGNATURE',
+    destination: 'SANAO, KATIPUNAN ZN',
+    passengers: 'CHIED R. CAPERIDA',
+    timestamp: '22/08/2025 14:30',
+  ),
+  const TripTicketLogModel(
+    dateOfTravel: '2025-08-22',
+    driver: 'STEVE P. BARORO',
+    vehicle: 'CANTER VEHICLE',
+    purpose: 'TO SUBMIT URGENT',
+    destination: 'DAPITAN CITY',
+    passengers: 'JOSEPHINE OXINO',
+    timestamp: '22/08/2025 14:30',
+  ),
+];
