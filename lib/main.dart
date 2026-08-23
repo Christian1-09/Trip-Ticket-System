@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jtrips_app/features/admin/presentation/screens/admin_shell.dart';
-import 'package:jtrips_app/features/driver/presentation/UserRegistration/LoginScreen.dart';
-import 'package:jtrips_app/features/driver/presentation/UserRegistration/RegisterScreen.dart';
+import 'package:jtrips_app/features/auth/presentation/LoginScreen.dart';
 import 'package:jtrips_app/features/driver/presentation/widgets/driver_bottomMenu_Section.dart';
+import 'package:jtrips_app/features/welcome/welcome.dart';
+import 'features/auth/presentation/RegisterScreen.dart';
 import 'features/instructor/presentation/screens/widgets/instructor_botton_bar.dart';
 
 
@@ -55,6 +56,10 @@ class DevMenu extends StatelessWidget {
           ElevatedButton(onPressed: () =>
               Navigator.push(context,MaterialPageRoute(builder: (_) => AdminShell())),
               child: Text("Admin interface (web)")),
+
+          ElevatedButton(onPressed: () =>
+              Navigator.push(context,MaterialPageRoute(builder: (_) => Welcome())),
+              child: Text("Welcome")),
 
         ],
       ),
