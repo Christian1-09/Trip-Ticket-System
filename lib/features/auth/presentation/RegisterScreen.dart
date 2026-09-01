@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:jtrips_app/core/theme/app_colors.dart';
 
 enum UserRole {
-  visitingLecturer('Visiting Lecturer'),
   faculty('Faculty'),
   staff('Staff'),
   ssgPresident('SSG President'),
