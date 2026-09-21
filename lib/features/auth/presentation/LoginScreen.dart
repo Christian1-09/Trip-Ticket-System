@@ -196,14 +196,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// NOTE: _JtripsLogo, _FieldLabel, _AppTextField, and _OrDivider below are the
-// exact same widgets used in register_screen.dart. Since they're private
-// (underscore-prefixed), they can't be imported/shared across files as-is.
-// Recommend extracting them into a shared `auth_widgets.dart` file so both
-// screens use one copy — this duplication is only for a quick self-contained
-// deliverable.
-
 class _JtripsLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

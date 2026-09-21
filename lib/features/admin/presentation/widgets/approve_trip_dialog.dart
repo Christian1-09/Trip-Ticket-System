@@ -1,56 +1,22 @@
 // features/admin/presentation/widgets/approve_trip_dialog.dart
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:jtrips_app/features/admin/data/models/admin_trip_model.dart';
 import 'package:jtrips_app/features/admin/presentation/widgets/confirm_approve_dialog.dart';
-import 'package:signature/signature.dart';
-import 'package:jtrips_app/features/admin/data/models/requestor_Information_model.dart';
 
-class ApproveTripDialog extends StatefulWidget {
-  final RequestorInformationModel info;
+class ApproveTripDialog extends StatelessWidget {
+  final AdminTripModel trip;
   final VoidCallback onCancel;
-  final void Function(Uint8List signatureBytes) onSubmit;
+  final VoidCallback onSubmit;
 
   const ApproveTripDialog({
-    required this.info,
+    required this.trip,
     required this.onCancel,
     required this.onSubmit,
     super.key,
   });
 
   @override
-  State<ApproveTripDialog> createState() => _ApproveTripDialogState();
-}
-
-class _ApproveTripDialogState extends State<ApproveTripDialog> {
-  late final SignatureController _signatureController;
-  bool _hasSignature = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _signatureController = SignatureController(
-      penStrokeWidth: 2,
-      penColor: Colors.black87,
-      exportBackgroundColor: Colors.white,
-    );
-    _signatureController.addListener(() {
-      final isNotEmpty = _signatureController.isNotEmpty;
-      if (isNotEmpty != _hasSignature) {
-        setState(() => _hasSignature = isNotEmpty);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _signatureController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final info = widget.info;
-
     return Dialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
@@ -67,94 +33,99 @@ class _ApproveTripDialogState extends State<ApproveTripDialog> {
             children: [
               const Center(
                 child: Text('Approve Trip Request',
-                    style: TextStyle(color: Color(0xFF1A237E), fontSize: 18, fontWeight: FontWeight.bold)),
+                    style: TextStyle(
+                        color: Color(0xFF1A237E),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold)),
               ),
               const SizedBox(height: 16),
 
+              if (trip.isUrgent) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF3CD),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFF9A825)),
+                  ),
+                  child: Text(
+                    'URGENT: ${trip.urgentReason ?? 'No reason given'}',
+                    style: const TextStyle(
+                        color: Colors.black87, fontSize: 12.5, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                const SizedBox(height: 14),
+              ],
+
               const Text('Requestor Information',
-                  style: TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold)),
               const SizedBox(height: 6),
-              _infoLine('Trip ID:', info.tripId),
-              _infoLine('Requesting Officer:', info.requestingOfficer),
-              _infoLine('Department:', info.department),
-              _infoLine('', '${info.requestedOn} | ${info.time}'),
+              _infoLine('Trip ID:', trip.ticketNumber),
+              _infoLine('Requesting Officer:', trip.requester.fullName),
+              _infoLine('Department:', trip.departmentName),
+              _infoLine('Schedule:', '${trip.dateLabel} | ${trip.departureLabel}'),
+              _infoLine(trip.endTimeTitle, trip.endTimeLabel),
+              _infoLine('Service:', trip.serviceModeLabel),
 
               const SizedBox(height: 14),
               const Text('Driver Information',
-                  style: TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold)),
               const SizedBox(height: 6),
-              _infoLine('Vehicle Assigned:', info.vehicleAssigned),
-              _infoLine('Driver Name:', info.driverName),
-              _infoLine('Driver Contact #:', '${info.driverName.split(' ').first} ${info.driverNumber}'),
+              _infoLine('Vehicle Assigned:', '${trip.vehicleModel} (${trip.vehiclePlate})'),
+              _infoLine('Driver Name:',
+                  trip.driver.isHeadDriver
+                      ? '${trip.driver.fullName} (Head Driver)'
+                      : trip.driver.fullName),
+              _infoLine('Driver Contact #:', trip.driver.contact),
 
-              const SizedBox(height: 14),
-              const Text('Requestor e-Signature',
-                  style: TextStyle(color: Colors.black54, fontSize: 12)),
-              const SizedBox(height: 6),
-              Container(
-                height: 110,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black26),
-                  borderRadius: BorderRadius.circular(8),
+              if (trip.driver.isHeadDriver) ...[
+                const SizedBox(height: 10),
+                const Text(
+                  'The head driver is the assigned driver, so his approval step is '
+                      'skipped and this trip goes straight to him to accept.',
+                  style: TextStyle(color: Colors.black54, fontSize: 12),
                 ),
-                child: Stack(
-                  children: [
-                    Signature(controller: _signatureController, backgroundColor: Colors.white),
-                    if (!_hasSignature)
-                      const Center(
-                        child: Text('Please sign the from to approve trip request',
-                            style: TextStyle(color: Colors.black38, fontSize: 12)),
-                      ),
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: IconButton(
-                        icon: const Icon(Icons.refresh, size: 18, color: Colors.black38),
-                        onPressed: () => _signatureController.clear(),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              ],
 
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   ElevatedButton(
-                    onPressed: widget.onCancel,
+                    onPressed: onCancel,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE53935),
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                    child: const Text('Cancel', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                    child: const Text('Cancel',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                   ),
                   const SizedBox(width: 10),
                   ElevatedButton(
-                    onPressed: _hasSignature
-                        ? () {
+                    onPressed: () {
                       showDialog(
                         context: context,
                         barrierDismissible: false,
                         builder: (confirmContext) => ConfirmApproveDialog(
-                          onCancel: () => Navigator.of(confirmContext).pop(), // closes confirm only, signature dialog stays open
-                          onConfirm: () async {
-                            Navigator.of(confirmContext).pop(); // close confirm dialog
-                            final bytes = await _signatureController.toPngBytes();
-                            if (bytes != null) widget.onSubmit(bytes); // this closes the signature dialog too (see step 3)
+                          onCancel: () => Navigator.of(confirmContext).pop(),
+                          onConfirm: () {
+                            Navigator.of(confirmContext).pop();
+                            onSubmit(); // caller closes this dialog and calls the API
                           },
                         ),
                       );
-                    }
-                        : null,
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2E7D32),
-                      disabledBackgroundColor: const Color(0xFF2E7D32).withOpacity(0.35),
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                    child: const Text('Submit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                    child: const Text('Approve',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:jtrips_app/core/theme/app_colors.dart';
 import 'package:jtrips_app/features/instructor/presentation/screens/instructor_TripTicketFlowScreen.dart';
 import 'package:jtrips_app/features/instructor/presentation/screens/instructor_home_screen.dart';
-import 'package:jtrips_app/features/instructor/presentation/screens/instructor_profile_screen.dart';
+import 'package:jtrips_app/features/profile/instructor_profile_screen.dart';
 import 'package:jtrips_app/features/instructor/presentation/screens/instructor_schedule_screen.dart';
 import 'package:jtrips_app/features/instructor/presentation/screens/instructor_vehicle_screen.dart';
 

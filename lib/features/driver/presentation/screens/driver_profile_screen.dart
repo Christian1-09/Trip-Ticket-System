@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:jtrips_app/core/theme/app_colors.dart';
 import 'package:jtrips_app/core/theme/media.dart';
-import 'package:jtrips_app/features/instructor/presentation/screens/instructor_profile_screen.dart';
+import 'package:jtrips_app/features/profile/instructor_profile_screen.dart';
 
 class DriverProfileScreen extends StatelessWidget {
   final String name;

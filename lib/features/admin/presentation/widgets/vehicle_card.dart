@@ -1,5 +1,6 @@
 // features/admin/presentation/widgets/vehicle_card.dart
 import 'package:flutter/material.dart';
+import 'package:jtrips_app/core/theme/config/api_config.dart';
 import '../../data/models/vehicle_model.dart';
 
 class VehicleCard extends StatelessWidget {
@@ -8,28 +9,34 @@ class VehicleCard extends StatelessWidget {
 
   Color get _statusColor {
     switch (vehicle.status) {
-      case VehicleStatus.available:
+      case VehicleStatus.active:
         return const Color(0xFF2E7D32);
       case VehicleStatus.onTrip:
         return const Color(0xFFF9A825);
       case VehicleStatus.maintenance:
         return const Color(0xFFC62828);
+      case VehicleStatus.inactive:
+        return const Color(0xFF64748B);
     }
   }
 
   String get _statusLabel {
     switch (vehicle.status) {
-      case VehicleStatus.available:
+      case VehicleStatus.active:
         return 'Available';
       case VehicleStatus.onTrip:
         return 'On Trip';
       case VehicleStatus.maintenance:
         return 'Maintenance';
+      case VehicleStatus.inactive:
+        return 'Inactive';
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final imageUrl = ApiConfig.mediaUrl(vehicle.imageUrl);
+
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF141B4D),
@@ -44,12 +51,14 @@ class VehicleCard extends StatelessWidget {
             height: 130,
             width: double.infinity,
             color: Colors.white,
-            child: Image.asset(
-              vehicle.imagePath,
+            child: imageUrl != null
+                ? Image.network(
+              imageUrl,
               fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) =>
-              const Center(child: Icon(Icons.directions_car, size: 48, color: Colors.black26)),
-            ),
+              errorBuilder: (context, error, stackTrace) => const Center(
+                  child: Icon(Icons.directions_car, size: 48, color: Colors.black26)),
+            )
+                : const Center(child: Icon(Icons.directions_car, size: 48, color: Colors.black26)),
           ),
           Padding(
             padding: const EdgeInsets.all(12),
@@ -67,13 +76,13 @@ class VehicleCard extends StatelessWidget {
                   children: [
                     Expanded(child: _statBox('CAPACITY', '${vehicle.capacity}pax')),
                     const SizedBox(width: 8),
-                    Expanded(child: _statBox('ODOMETER', '${vehicle.odometerKm} KM')),
+                    Expanded(child: _statBox('ODOMETER', '${vehicle.odometerCurrent ?? 0} KM')),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Expanded(child: _statBox('YEAR', '${vehicle.year}')),
+                    Expanded(child: _statBox('YEAR', '${vehicle.year ?? '—'}')),
                     const SizedBox(width: 8),
                     Expanded(child: _statBox('TRIPS', '${vehicle.trips}')),
                   ],

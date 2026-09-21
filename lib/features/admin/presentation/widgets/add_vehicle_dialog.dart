@@ -1,26 +1,21 @@
 // features/admin/presentation/widgets/add_vehicle_dialog.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import '../providers/vehicle_provider.dart';
 
-class AddVehicleDialog extends StatefulWidget {
-  final VoidCallback onCancel;
-  final VoidCallback onConfirm; // placeholder for now — no data passed yet
-
-  const AddVehicleDialog({
-    required this.onCancel,
-    required this.onConfirm,
-    super.key,
-  });
+class AddVehicleDialog extends ConsumerStatefulWidget {
+  const AddVehicleDialog({super.key});
 
   @override
-  State<AddVehicleDialog> createState() => _AddVehicleDialogState();
+  ConsumerState<AddVehicleDialog> createState() => _AddVehicleDialogState();
 }
 
-class _AddVehicleDialogState extends State<AddVehicleDialog> {
+class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
   final _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();
-  final _dieselModelsController = TextEditingController();
+  final _dieselModelsController = TextEditingController(); // maps to "type"
   final _plateController = TextEditingController();
   final _capacityController = TextEditingController();
   final _odometerController = TextEditingController();
@@ -43,6 +38,9 @@ class _AddVehicleDialogState extends State<AddVehicleDialog> {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png', 'docx'],
+      // Fixed: without this, .bytes is null on web — the upload would
+      // silently fail with nothing to send.
+      withData: true,
     );
     if (result != null && result.files.isNotEmpty) {
       setState(() => _pickedFile = result.files.first);
@@ -100,8 +98,36 @@ class _AddVehicleDialogState extends State<AddVehicleDialog> {
     return null;
   }
 
+  Future<void> _handleConfirm() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    await ref.read(addVehicleControllerProvider.notifier).create(
+      model: _nameController.text.trim(),
+      type: _dieselModelsController.text.trim(),
+      plateNumber: _plateController.text.trim(),
+      capacity: _capacityController.text.trim(),
+      year: _yearController.text.trim(),
+      odometerCurrent: _odometerController.text.trim(),
+      imageBytes: _pickedFile?.bytes,
+      imageFilename: _pickedFile?.name,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen<AddVehicleState>(addVehicleControllerProvider, (previous, next) {
+      if (next is AddVehicleError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.message), backgroundColor: Colors.redAccent),
+        );
+      } else if (next is AddVehicleSuccess) {
+        ref.read(addVehicleControllerProvider.notifier).reset();
+        Navigator.of(context).pop();
+      }
+    });
+
+    final isSaving = ref.watch(addVehicleControllerProvider) is AddVehicleLoading;
+
     return Dialog(
       backgroundColor: const Color(0xFF141B4D),
       shape: RoundedRectangleBorder(
@@ -119,7 +145,6 @@ class _AddVehicleDialogState extends State<AddVehicleDialog> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Upload box
                   GestureDetector(
                     onTap: _pickFile,
                     child: Container(
@@ -274,9 +299,9 @@ class _AddVehicleDialogState extends State<AddVehicleDialog> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 6),
-                              child: const Text('Trips',
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 6),
+                              child: Text('Trips',
                                   style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600)),
                             ),
                             TextFormField(
@@ -296,7 +321,7 @@ class _AddVehicleDialogState extends State<AddVehicleDialog> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       ElevatedButton(
-                        onPressed: widget.onCancel,
+                        onPressed: isSaving ? null : () => Navigator.of(context).pop(),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF37474F),
                           padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
@@ -306,17 +331,19 @@ class _AddVehicleDialogState extends State<AddVehicleDialog> {
                       ),
                       const SizedBox(width: 10),
                       ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            widget.onConfirm(); // placeholder — closes dialog only, no data saved yet
-                          }
-                        },
+                        onPressed: isSaving ? null : _handleConfirm,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.amber,
                           padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        child: const Text('Confirm',
+                        child: isSaving
+                            ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0A0F35)),
+                        )
+                            : const Text('Confirm',
                             style: TextStyle(color: Color(0xFF0A0F35), fontWeight: FontWeight.bold)),
                       ),
                     ],

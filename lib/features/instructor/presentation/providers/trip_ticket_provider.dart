@@ -1,74 +1,120 @@
-// features/trip_ticket/presentation/providers/trip_ticket_provider.dart
-import 'dart:typed_data';
+// features/instructor/presentation/providers/trip_ticket_provider.dart
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../trip_ticket/data/reference_models.dart';
+
+
+/// Marker for "this argument was not passed", so copyWith can tell the
+/// difference between "keep the old value" and "set it to null".
+/// Without this, a removed file or a cleared time could never be cleared.
+const Object _unset = Object();
 
 class TripTicketFormData {
   final PlatformFile? uploadedFile;
   final String purpose;
   final DateTime? date;
+
+  /// Display strings like "3:30 PM" (from TimeOfDay.format), parsed back
+  /// into a real DateTime just before submitting.
   final String? departureTime;
+  final String? returnTime; // used when serviceMode = wait
+  final String? pickupTime; // used when serviceMode = dropAndPickup
+  final ServiceMode serviceMode;
+
   final String? department;
   final String? driver;
   final String? vehicle;
 
-  // New fields
   final List<String> passengerNames;
-  final String origin;
-  final String destination;
-  final List<String> additionalStops;
-  final Uint8List? signatureBytes;
+
+  /// The origin is always base (Katipunan), so it is not editable.
+  final TripStopEntry? destination;
+  final List<TripStopEntry> additionalStops;
+
   final bool certifyOfficialBusiness;
   final bool certifyRecordCorrectness;
+
+  /// Urgent is now chosen on the Upload step: either upload an
+  /// authorization letter, or mark the trip urgent and give a reason.
+  final bool manualUrgent;
+  final String? urgentReason;
 
   const TripTicketFormData({
     this.uploadedFile,
     this.purpose = '',
     this.date,
     this.departureTime,
+    this.returnTime,
+    this.pickupTime,
+    this.serviceMode = ServiceMode.wait,
     this.department,
     this.driver,
     this.vehicle,
     this.passengerNames = const [],
-    this.origin = '',
-    this.destination = '',
+    this.destination,
     this.additionalStops = const [],
-    this.signatureBytes,
     this.certifyOfficialBusiness = false,
     this.certifyRecordCorrectness = false,
+    this.manualUrgent = false,
+    this.urgentReason,
   });
 
+  /// True when the Upload step's rule is satisfied.
+  bool get uploadStepComplete =>
+      uploadedFile != null || (manualUrgent && (urgentReason ?? '').trim().isNotEmpty);
+
+  /// The farthest stop decides how long the driver is on the road.
+  int get maxTravelMinutes {
+    var max = destination?.travelMinutes ?? 0;
+    for (final stop in additionalStops) {
+      if (stop.travelMinutes > max) max = stop.travelMinutes;
+    }
+    return max;
+  }
+
   TripTicketFormData copyWith({
-    PlatformFile? uploadedFile,
+    Object? uploadedFile = _unset,
     String? purpose,
-    DateTime? date,
-    String? departureTime,
-    String? department,
-    String? driver,
-    String? vehicle,
+    Object? date = _unset,
+    Object? departureTime = _unset,
+    Object? returnTime = _unset,
+    Object? pickupTime = _unset,
+    ServiceMode? serviceMode,
+    Object? department = _unset,
+    Object? driver = _unset,
+    Object? vehicle = _unset,
     List<String>? passengerNames,
-    String? origin,
-    String? destination,
-    List<String>? additionalStops,
-    Uint8List? signatureBytes,
+    Object? destination = _unset,
+    List<TripStopEntry>? additionalStops,
     bool? certifyOfficialBusiness,
     bool? certifyRecordCorrectness,
+    bool? manualUrgent,
+    Object? urgentReason = _unset,
   }) {
     return TripTicketFormData(
-      uploadedFile: uploadedFile ?? this.uploadedFile,
+      uploadedFile: identical(uploadedFile, _unset)
+          ? this.uploadedFile
+          : uploadedFile as PlatformFile?,
       purpose: purpose ?? this.purpose,
-      date: date ?? this.date,
-      departureTime: departureTime ?? this.departureTime,
-      department: department ?? this.department,
-      driver: driver ?? this.driver,
-      vehicle: vehicle ?? this.vehicle,
+      date: identical(date, _unset) ? this.date : date as DateTime?,
+      departureTime:
+      identical(departureTime, _unset) ? this.departureTime : departureTime as String?,
+      returnTime: identical(returnTime, _unset) ? this.returnTime : returnTime as String?,
+      pickupTime: identical(pickupTime, _unset) ? this.pickupTime : pickupTime as String?,
+      serviceMode: serviceMode ?? this.serviceMode,
+      department: identical(department, _unset) ? this.department : department as String?,
+      driver: identical(driver, _unset) ? this.driver : driver as String?,
+      vehicle: identical(vehicle, _unset) ? this.vehicle : vehicle as String?,
       passengerNames: passengerNames ?? this.passengerNames,
-      origin: origin ?? this.origin,
-      destination: destination ?? this.destination,
+      destination:
+      identical(destination, _unset) ? this.destination : destination as TripStopEntry?,
       additionalStops: additionalStops ?? this.additionalStops,
-      signatureBytes: signatureBytes ?? this.signatureBytes,
       certifyOfficialBusiness: certifyOfficialBusiness ?? this.certifyOfficialBusiness,
       certifyRecordCorrectness: certifyRecordCorrectness ?? this.certifyRecordCorrectness,
+      manualUrgent: manualUrgent ?? this.manualUrgent,
+      urgentReason:
+      identical(urgentReason, _unset) ? this.urgentReason : urgentReason as String?,
     );
   }
 }
@@ -108,7 +154,21 @@ class TripTicketNotifier extends StateNotifier<TripTicketState> {
     state = state.copyWith(formData: update(state.formData));
   }
 
-  // Passenger helpers
+  void reset() => state = const TripTicketState();
+
+  // ----- Upload step -----
+  void setUploadedFile(PlatformFile? file) {
+    updateFormData((d) => d.copyWith(uploadedFile: file));
+  }
+
+  void setManualUrgent(bool value) {
+    updateFormData((d) => d.copyWith(
+      manualUrgent: value,
+      urgentReason: value ? d.urgentReason : null,
+    ));
+  }
+
+  // ----- Passengers -----
   void addPassenger(String name) {
     final trimmed = name.trim();
     if (trimmed.isEmpty) return;
@@ -122,19 +182,28 @@ class TripTicketNotifier extends StateNotifier<TripTicketState> {
     updateFormData((d) => d.copyWith(passengerNames: updated));
   }
 
-  // Stops helpers
-  void addStop() {
-    updateFormData((d) => d.copyWith(additionalStops: [...d.additionalStops, '']));
+  // ----- Stops -----
+  void setDestination(TripStopEntry? stop) {
+    updateFormData((d) => d.copyWith(destination: stop));
   }
 
-  void updateStop(int index, String value) {
+  void addStop() {
+    updateFormData((d) => d.copyWith(
+      additionalStops: [...d.additionalStops, const TripStopEntry()],
+    ));
+  }
+
+  void updateStop(int index, TripStopEntry stop) {
     final updated = [...state.formData.additionalStops];
-    updated[index] = value;
+    if (index < 0 || index >= updated.length) return;
+    updated[index] = stop;
     updateFormData((d) => d.copyWith(additionalStops: updated));
   }
 
   void removeStop(int index) {
-    final updated = [...state.formData.additionalStops]..removeAt(index);
+    final updated = [...state.formData.additionalStops];
+    if (index < 0 || index >= updated.length) return;
+    updated.removeAt(index);
     updateFormData((d) => d.copyWith(additionalStops: updated));
   }
 }

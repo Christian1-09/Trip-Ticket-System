@@ -6,8 +6,7 @@ enum UserRole {
   faculty('Faculty'),
   staff('Staff'),
   ssgPresident('SSG President'),
-  driver('Driver'),
-  headDriver('Head Driver');
+  driver('Driver');
 
   final String label;
   const UserRole(this.label);
@@ -275,8 +274,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _JtripsLogo extends StatelessWidget {
   @override

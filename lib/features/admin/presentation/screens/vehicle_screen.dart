@@ -4,13 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jtrips_app/features/admin/presentation/widgets/add_vehicle_dialog.dart';
 import '../providers/vehicle_provider.dart';
 import '../widgets/vehicle_card.dart';
+import '../../data/models/vehicle_model.dart';
 
 class VehicleScreen extends ConsumerWidget {
   const VehicleScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final vehicles = ref.watch(vehicleListProvider);
+    final vehiclesAsync = ref.watch(vehicleListProvider);
     final filter = ref.watch(vehicleFilterProvider);
 
     return Padding(
@@ -33,14 +34,12 @@ class VehicleScreen extends ConsumerWidget {
               ),
               ElevatedButton.icon(
                 onPressed: () {
-                  showDialog(context: context,
-                  barrierDismissible: false,
-                  builder: (dialogContext) => AddVehicleDialog(
-                      onCancel: () => Navigator.of(dialogContext).pop(),
-                      onConfirm: () => Navigator.of(dialogContext).pop(),
-                  ),
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (dialogContext) => const AddVehicleDialog(),
                   );
-                }, // placeholder
+                },
                 icon: const Icon(Icons.add, size: 16, color: Colors.white),
                 label: const Text('Add Vehicles', style: TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
@@ -80,15 +79,51 @@ class VehicleScreen extends ConsumerWidget {
           const SizedBox(height: 20),
 
           Expanded(
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 300,
-                mainAxisExtent: 356,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
+            child: vehiclesAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, _) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.redAccent, size: 32),
+                    const SizedBox(height: 8),
+                    const Text('Could not load vehicles', style: TextStyle(color: Colors.white)),
+                    const SizedBox(height: 4),
+                    Text('$err',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.white38, fontSize: 11)),
+                    TextButton(
+                      onPressed: () => ref.invalidate(vehicleListProvider),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
               ),
-              itemCount: vehicles.length,
-              itemBuilder: (context, index) => VehicleCard(vehicle: vehicles[index]),
+              data: (vehicles) {
+                final filtered = switch (filter) {
+                  'Available' => vehicles.where((v) => v.status == VehicleStatus.active).toList(),
+                  'On Trip' => vehicles.where((v) => v.status == VehicleStatus.onTrip).toList(),
+                  'Maintenance' => vehicles.where((v) => v.status == VehicleStatus.maintenance).toList(),
+                  _ => vehicles,
+                };
+
+                if (filtered.isEmpty) {
+                  return const Center(
+                    child: Text('No vehicles found.', style: TextStyle(color: Colors.white54)),
+                  );
+                }
+
+                return GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 300,
+                    mainAxisExtent: 356,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) => VehicleCard(vehicle: filtered[index]),
+                );
+              },
             ),
           ),
         ],

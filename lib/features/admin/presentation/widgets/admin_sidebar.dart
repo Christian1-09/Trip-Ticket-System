@@ -13,6 +13,7 @@ const adminNavItems = [
   AdminNavItem(Icons.directions_car_outlined, 'Vehicle'),
   AdminNavItem(Icons.people_outline, 'Drivers'),
   AdminNavItem(Icons.bar_chart_outlined, 'Analysis'),
+  AdminNavItem(Icons.person_add_alt_outlined, 'Request'),
   AdminNavItem(Icons.receipt_long_outlined, 'Trip Ticket log'),
   AdminNavItem(Icons.person_outline, 'Profile'),
 ];
