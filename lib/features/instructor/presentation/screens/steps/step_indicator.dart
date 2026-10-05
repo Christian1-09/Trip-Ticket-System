@@ -1,12 +1,14 @@
 // core/widgets/step_indicator.dart
 import 'package:flutter/material.dart';
-import 'package:jtrips_app/core/theme/app_colors.dart';
 
 class StepInfo {
   final String label;
   const StepInfo(this.label);
 }
 
+/// Step indicator styled for the blue Trip Ticket header:
+/// active = yellow circle, completed = yellow circle with a check,
+/// upcoming = translucent white circle. Labels are white, active is yellow.
 class StepIndicator extends StatelessWidget {
   final List<StepInfo> steps;
   final int currentIndex; // 0-based
@@ -17,20 +19,32 @@ class StepIndicator extends StatelessWidget {
     super.key,
   });
 
+  static const _yellow = Color(0xFFFFC629);
+  static const _navy = Color(0xFF0B1E5B);
+  static const _circleSize = 34.0;
+
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(steps.length * 2 - 1, (i) {
         if (i.isOdd) {
-          // connecting line between circle (i-1)/2 and (i+1)/2
+          // Connecting line between circle (i-1)/2 and (i+1)/2,
+          // vertically centred on the circles (not on circle + label).
           final leftIndex = (i - 1) ~/ 2;
           final isCompleted = leftIndex < currentIndex;
           return Expanded(
-            child: Container(
-              height: 2,
-              color: isCompleted
-                  ? AppColors.statusBlue
-                  : AppColors.textSecondary.withOpacity(0.3),
+            child: Padding(
+              padding: const EdgeInsets.only(top: _circleSize / 2 - 1.5),
+              child: Container(
+                height: 3,
+                decoration: BoxDecoration(
+                  color: isCompleted
+                      ? _yellow
+                      : Colors.white.withOpacity(0.45),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
             ),
           );
         }
@@ -38,54 +52,49 @@ class StepIndicator extends StatelessWidget {
         final stepIndex = i ~/ 2;
         final isCompleted = stepIndex < currentIndex;
         final isActive = stepIndex == currentIndex;
+        final highlighted = isActive || isCompleted;
 
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 32,
-              height: 32,
+              width: _circleSize,
+              height: _circleSize,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isCompleted
-                    ? AppColors.statusBlue
-                    : isActive
-                    ? AppColors.accentYellow
-                    : Colors.transparent,
+                color: highlighted ? _yellow : Colors.white.withOpacity(0.18),
                 border: Border.all(
-                  color: isActive || isCompleted
-                      ? Colors.transparent
-                      : AppColors.textSecondary.withOpacity(0.4),
-                  width: 1.5,
+                  color: highlighted ? Colors.white : Colors.white.withOpacity(0.9),
+                  width: 2,
                 ),
                 boxShadow: isActive
                     ? [
                   BoxShadow(
-                    color: AppColors.accentYellow.withOpacity(0.5),
-                    blurRadius: 8,
+                    color: _yellow.withOpacity(0.6),
+                    blurRadius: 10,
                   ),
                 ]
                     : null,
               ),
               child: isCompleted
-                  ? const Icon(Icons.check, color: Colors.white, size: 18)
+                  ? const Icon(Icons.check_rounded, color: _navy, size: 18)
                   : Text(
                 '${stepIndex + 1}',
                 style: TextStyle(
-                  color: isActive ? AppColors.cardDeepBlue : AppColors.textSecondary,
-                  fontWeight: FontWeight.bold,
+                  color: isActive ? _navy : Colors.white,
+                  fontWeight: FontWeight.w800,
                   fontSize: 14,
                 ),
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               steps[stepIndex].label,
               style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: isActive ? AppColors.accentYellow : AppColors.textSecondary,
+                fontSize: 12,
+                fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
+                color: isActive ? _yellow : Colors.white,
               ),
             ),
           ],

@@ -162,6 +162,7 @@ class AdminTripModel {
   final DateTime? returnTime;
   final DateTime? pickupTime;
   final DateTime createdAt;
+  final DateTime? printedAt; // first time the ticket was printed, if ever
 
   final AdminPerson requester;
   final AdminPerson driver;
@@ -187,6 +188,7 @@ class AdminTripModel {
     this.returnTime,
     this.pickupTime,
     required this.createdAt,
+    this.printedAt,
     required this.requester,
     required this.driver,
     required this.departmentName,
@@ -223,6 +225,7 @@ class AdminTripModel {
       returnTime: _parseDate(json['returnTime']),
       pickupTime: _parseDate(json['pickupTime']),
       createdAt: _parseDate(json['createdAt']) ?? DateTime.now(),
+      printedAt: _parseDate(json['printedAt']),
       requester: AdminPerson.fromJson(json['requester'] as Map<String, dynamic>?),
       driver: AdminPerson.fromJson(json['driver'] as Map<String, dynamic>?),
       departmentName: department?['name'] as String? ?? '—',

@@ -1,10 +1,21 @@
 // features/instructor/presentation/screens/steps/upload_step.dart
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:jtrips_app/core/theme/app_colors.dart';
 
 import '../../providers/trip_ticket_provider.dart';
+
+class _Palette {
+  static const navy = Color(0xFF0B1E5B);
+  static const blue = Color(0xFF1E6FE0);
+  static const yellow = Color(0xFFFFC629);
+  static const lightBlue = Color(0xFFE6F0FD);
+  static const boxFill = Color(0xFFF6FAFF);
+  static const border = Color(0xFFE3E9F3);
+  static const textDark = Color(0xFF0F1B3D);
+  static const textMuted = Color(0xFF6B7489);
+  static const urgentRed = Color(0xFFE53935);
+}
 
 class UploadStep extends ConsumerStatefulWidget {
   const UploadStep({super.key});
@@ -32,7 +43,7 @@ class _UploadStepState extends ConsumerState<UploadStep> {
   Future<void> _pickFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png', 'docx'],
+      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
       // Required: without this, `bytes` is null and the upload silently fails.
       withData: true,
     );
@@ -48,242 +59,475 @@ class _UploadStepState extends ConsumerState<UploadStep> {
     final uploadedFile = formData.uploadedFile;
     final canContinue = formData.uploadStepComplete;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: const [
-              Icon(Icons.upload_file, color: AppColors.accentYellow, size: 20),
-              SizedBox(width: 8),
-              Text(
-                'Authorization Letter',
-                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.cardDeepBlue,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.info_outline, color: AppColors.statusBlue, size: 18),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: RichText(
-                    text: const TextSpan(
-                      style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 22, 16, 28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ---------- Section header ----------
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: _Palette.lightBlue,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(Icons.description_outlined,
+                        color: _Palette.blue, size: 26),
+                  ),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextSpan(text: 'Upload your '),
-                        TextSpan(
-                          text: 'authorization letter',
-                          style: TextStyle(color: AppColors.statusBlue, fontWeight: FontWeight.w600),
+                        Text(
+                          'Authorization Letter',
+                          style: TextStyle(
+                            color: _Palette.textDark,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                        TextSpan(
-                            text: ' to continue — or, if there is no time to prepare one, '
-                                'mark the trip as urgent and explain why.'),
+                        SizedBox(height: 4),
+                        Text(
+                          'Upload your authorization letter to continue — or, '
+                              'if there is no time to prepare one, mark the trip '
+                              'as urgent and explain why.',
+                          style: TextStyle(
+                            color: _Palette.textMuted,
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
+                        ),
                       ],
                     ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // ---------- Upload box ----------
+              DottedUploadBox(
+                fileName: uploadedFile?.name,
+                onTap: _pickFile,
+              ),
+              if (uploadedFile != null) ...[
+                const SizedBox(height: 4),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: () => notifier.setUploadedFile(null),
+                    icon: const Icon(Icons.delete_outline,
+                        size: 18, color: _Palette.urgentRed),
+                    label: const Text(
+                      'Remove file',
+                      style: TextStyle(
+                        color: _Palette.urgentRed,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ),
               ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          GestureDetector(
-            onTap: _pickFile,
-            child: DottedUploadBox(fileName: uploadedFile?.name),
-          ),
-          if (uploadedFile != null) ...[
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: () => notifier.setUploadedFile(null),
-                icon: const Icon(Icons.delete_outline, size: 16, color: Colors.redAccent),
-                label: const Text('Remove file',
-                    style: TextStyle(color: Colors.redAccent, fontSize: 12)),
-              ),
-            ),
-          ],
 
-          // ---------- OR: urgent without a letter ----------
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(child: Divider(color: AppColors.textSecondary.withOpacity(0.4))),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Text('OR',
-                    style: TextStyle(
-                        color: AppColors.textSecondary,
+              // ---------- OR ----------
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                      child: Divider(
+                          color: _Palette.textMuted.withOpacity(0.25),
+                          thickness: 1)),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(
+                      'OR',
+                      style: TextStyle(
+                        color: _Palette.textMuted,
                         fontSize: 12,
-                        fontWeight: FontWeight.w600)),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                      child: Divider(
+                          color: _Palette.textMuted.withOpacity(0.25),
+                          thickness: 1)),
+                ],
               ),
-              Expanded(child: Divider(color: AppColors.textSecondary.withOpacity(0.4))),
+              const SizedBox(height: 16),
+
+              // ---------- Urgent card ----------
+              _UrgentCard(
+                isUrgent: formData.manualUrgent,
+                onToggle: () => notifier.setManualUrgent(!formData.manualUrgent),
+                reasonField: TextField(
+                  controller: _urgentReasonController,
+                  maxLines: 3,
+                  minLines: 2,
+                  style: const TextStyle(
+                      color: _Palette.textDark, fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: 'Why is this urgent? *',
+                    hintStyle: const TextStyle(
+                        color: _Palette.textMuted, fontSize: 13.5),
+                    filled: true,
+                    fillColor: _Palette.boxFill,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: _Palette.border),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: _Palette.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide:
+                      const BorderSide(color: _Palette.blue, width: 1.5),
+                    ),
+                  ),
+                  onChanged: (val) => notifier
+                      .updateFormData((d) => d.copyWith(urgentReason: val)),
+                ),
+              ),
+
+              // ---------- Continue ----------
+              const SizedBox(height: 24),
+              _ContinueButton(
+                enabled: canContinue,
+                onTap: () => notifier.nextStep(),
+              ),
+              if (!canContinue) ...[
+                const SizedBox(height: 10),
+                const Center(
+                  child: Text(
+                    'Upload a letter, or tick "urgent" and give a reason, to continue.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: _Palette.textMuted, fontSize: 12),
+                  ),
+                ),
+              ],
             ],
           ),
-          const SizedBox(height: 16),
+        ),
+      ),
+    );
+  }
+}
 
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.cardDeepBlue,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: formData.manualUrgent
-                    ? Colors.redAccent.withOpacity(0.6)
-                    : Colors.transparent,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Checkbox(
-                      value: formData.manualUrgent,
-                      onChanged: (val) => notifier.setManualUrgent(val ?? false),
-                      activeColor: Colors.redAccent,
-                      side: BorderSide(color: AppColors.textSecondary.withOpacity(0.6)),
-                    ),
-                    const Expanded(
-                      child: Text(
-                        'This trip is urgent (no letter available)',
-                        style: TextStyle(
-                            color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
-                ),
-                const Padding(
-                  padding: EdgeInsets.only(left: 4, bottom: 4),
-                  child: Text(
-                    'Urgent requests are shown to the admin first. Use this only for '
-                        'genuine last-minute trips.',
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
-                  ),
-                ),
-                if (formData.manualUrgent) ...[
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _urgentReasonController,
-                    maxLines: 2,
-                    style: const TextStyle(color: Colors.white, fontSize: 13),
-                    decoration: InputDecoration(
-                      hintText: 'Why is this urgent? *',
-                      hintStyle:
-                      TextStyle(color: AppColors.textSecondary.withOpacity(0.6), fontSize: 13),
-                      filled: true,
-                      fillColor: AppColors.cardDeepBlue,
-                      contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppColors.statusBlue.withOpacity(0.4)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppColors.statusBlue.withOpacity(0.4)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.accentYellow),
-                      ),
-                    ),
-                    onChanged: (val) => ref
-                        .read(tripTicketProvider.notifier)
-                        .updateFormData((d) => d.copyWith(urgentReason: val)),
-                  ),
-                ],
-              ],
-            ),
+class _UrgentCard extends StatelessWidget {
+  final bool isUrgent;
+  final VoidCallback onToggle;
+  final Widget reasonField;
+
+  const _UrgentCard({
+    required this.isUrgent,
+    required this.onToggle,
+    required this.reasonField,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      decoration: BoxDecoration(
+        color: isUrgent ? const Color(0xFFFFF5F5) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isUrgent
+              ? _Palette.urgentRed.withOpacity(0.6)
+              : _Palette.border,
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _Palette.navy.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: canContinue ? () => notifier.nextStep() : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accentYellow,
-                disabledBackgroundColor: AppColors.accentYellow.withOpacity(0.3),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: onToggle,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Text('Continue to Details',
-                      style: TextStyle(color: AppColors.cardDeepBlue, fontWeight: FontWeight.bold)),
-                  SizedBox(width: 6),
-                  Icon(Icons.arrow_forward, color: AppColors.cardDeepBlue, size: 18),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      color: isUrgent ? _Palette.urgentRed : Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: isUrgent
+                            ? _Palette.urgentRed
+                            : _Palette.navy.withOpacity(0.7),
+                        width: 2,
+                      ),
+                    ),
+                    child: isUrgent
+                        ? const Icon(Icons.check_rounded,
+                        color: Colors.white, size: 18)
+                        : null,
+                  ),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'This trip is urgent (no letter available)',
+                          style: TextStyle(
+                            color: _Palette.textDark,
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Urgent requests are shown to the admin first. '
+                              'Use this only for urgent cases.',
+                          style: TextStyle(
+                            color: _Palette.textMuted,
+                            fontSize: 12,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
-          if (!canContinue) ...[
-            const SizedBox(height: 8),
-            const Text(
-              'Upload a letter, or tick "urgent" and give a reason, to continue.',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+          if (isUrgent)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: reasonField,
             ),
-          ],
         ],
       ),
     );
   }
 }
 
-/// Dashed-border box, built with CustomPaint so no extra package is needed.
-class DottedUploadBox extends StatelessWidget {
-  final String? fileName;
-  const DottedUploadBox({this.fileName, super.key});
+class _ContinueButton extends StatelessWidget {
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _ContinueButton({required this.enabled, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _DashedBorderPainter(),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 40),
-        child: Column(
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: enabled
+            ? [
+          BoxShadow(
+            color: _Palette.yellow.withOpacity(0.45),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ]
+            : null,
+      ),
+      child: ElevatedButton(
+        onPressed: enabled ? onTap : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _Palette.yellow,
+          disabledBackgroundColor: _Palette.yellow.withOpacity(0.35),
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            const Icon(Icons.cloud_upload_outlined, color: AppColors.statusBlue, size: 40),
-            const SizedBox(height: 12),
             Text(
-              fileName ?? 'Upload File',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15),
+              'Continue to Details',
+              style: TextStyle(
+                color: _Palette.textDark.withOpacity(enabled ? 1 : 0.5),
+                fontSize: 16.5,
+                fontWeight: FontWeight.w800,
+              ),
             ),
-            const SizedBox(height: 4),
-            if (fileName == null) ...[
-              const Text('Drag & drop your file here, or',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-              const Text('click to browse',
-                  style: TextStyle(
-                      color: AppColors.statusBlue, fontSize: 12, fontWeight: FontWeight.w600)),
-            ],
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              children: ['PDF', '.JPG', '.PNG', '.DOCX']
-                  .map((e) => Chip(
-                label: Text(e,
-                    style: const TextStyle(
-                        fontSize: 10, color: AppColors.textSecondary)),
-                backgroundColor: AppColors.cardDeepBlue,
-                side: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
-              ))
-                  .toList(),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Icon(
+                Icons.arrow_forward_rounded,
+                color: _Palette.textDark.withOpacity(enabled ? 1 : 0.5),
+                size: 24,
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Dashed-border upload box, built with CustomPaint so no extra package is needed.
+class DottedUploadBox extends StatelessWidget {
+  final String? fileName;
+  final VoidCallback? onTap;
+
+  const DottedUploadBox({this.fileName, this.onTap, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasFile = fileName != null;
+
+    return Material(
+      color: _Palette.boxFill,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: CustomPaint(
+          painter: _DashedBorderPainter(),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 30, 16, 22),
+            child: Column(
+              children: [
+                Icon(
+                  hasFile
+                      ? Icons.check_circle_rounded
+                      : Icons.cloud_upload_outlined,
+                  color: hasFile ? const Color(0xFF22A06B) : _Palette.blue,
+                  size: 52,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  fileName ?? 'Upload File',
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: _Palette.textDark,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                if (!hasFile) ...[
+                  const Text(
+                    'Drag & drop your file here, or',
+                    style: TextStyle(color: _Palette.textMuted, fontSize: 13.5),
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'click to browse',
+                    style: TextStyle(
+                      color: _Palette.blue,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ] else
+                  const Text(
+                    'Tap to replace file',
+                    style: TextStyle(
+                      color: _Palette.blue,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                const SizedBox(height: 20),
+                const Row(
+                  children: [
+                    Expanded(
+                      child: _FileTypeChip(
+                        label: 'PDF',
+                        icon: Icons.picture_as_pdf_outlined,
+                        color: Color(0xFFE53935),
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: _FileTypeChip(
+                        label: '.JPG',
+                        icon: Icons.image_rounded,
+                        color: Color(0xFF1E88E5),
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: _FileTypeChip(
+                        label: '.PNG',
+                        icon: Icons.image_rounded,
+                        color: Color(0xFF22A06B),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FileTypeChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const _FileTypeChip({
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: _Palette.lightBlue,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: _Palette.textDark,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -293,7 +537,7 @@ class _DashedBorderPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.statusBlue.withOpacity(0.6)
+      ..color = _Palette.blue.withOpacity(0.45)
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 

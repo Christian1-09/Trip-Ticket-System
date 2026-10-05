@@ -27,14 +27,14 @@ StateProvider<String>((ref) => 'All Department');
 /// The department list comes from the trips themselves, so it always
 /// matches the real data instead of a hard-coded list.
 final tripRequestDepartmentOptionsProvider = Provider<List<String>>((ref) {
-  final trips = ref.watch(pendingTripsProvider).value ?? [];
+  final trips = ref.watch(pendingTripsProvider).valueOrNull ?? [];
   final codes = trips.map((t) => t.departmentCode).toSet().toList()..sort();
   return ['All Department', ...codes];
 });
 
 /// Search + filters applied to the pending list.
 final filteredPendingTripsProvider = Provider<List<AdminTripModel>>((ref) {
-  final trips = ref.watch(pendingTripsProvider).value ?? [];
+  final trips = ref.watch(pendingTripsProvider).valueOrNull ?? [];
   final search = ref.watch(tripRequestSearchProvider).trim().toLowerCase();
   final urgency = ref.watch(tripRequestUrgencyFilterProvider);
   final department = ref.watch(tripRequestDepartmentFilterProvider);

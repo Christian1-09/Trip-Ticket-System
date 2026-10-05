@@ -124,10 +124,16 @@ class TripTicketState {
   final TripTicketFormData formData;
   final String ticketNumber;
 
+  /// Bumped by reset(). The flow screen keys its IndexedStack on this, so a
+  /// reset throws away every step widget — and with them every stale
+  /// TextEditingController — instead of leaving old text on screen.
+  final int formVersion;
+
   const TripTicketState({
     this.currentStep = 0,
     this.formData = const TripTicketFormData(),
     this.ticketNumber = 'TKT-2026-001',
+    this.formVersion = 0,
   });
 
   TripTicketState copyWith({int? currentStep, TripTicketFormData? formData}) {
@@ -135,6 +141,8 @@ class TripTicketState {
       currentStep: currentStep ?? this.currentStep,
       formData: formData ?? this.formData,
       ticketNumber: ticketNumber,
+      formVersion: formVersion,   // <-- must be carried, or every edit
+      //     would look like a reset
     );
   }
 }
@@ -154,7 +162,7 @@ class TripTicketNotifier extends StateNotifier<TripTicketState> {
     state = state.copyWith(formData: update(state.formData));
   }
 
-  void reset() => state = const TripTicketState();
+  void reset() => state = TripTicketState(formVersion: state.formVersion + 1);
 
   // ----- Upload step -----
   void setUploadedFile(PlatformFile? file) {
@@ -205,6 +213,24 @@ class TripTicketNotifier extends StateNotifier<TripTicketState> {
     if (index < 0 || index >= updated.length) return;
     updated.removeAt(index);
     updateFormData((d) => d.copyWith(additionalStops: updated));
+  }
+
+  /// One-tap urgent booking from the home header.
+  ///
+  /// Clears any half-filled form, marks the trip urgent with the reason the
+  /// requester just typed (the backend rejects manualUrgent without one),
+  /// then lands directly on the Details step.
+  ///
+  /// `uploadStepComplete` is already satisfied by
+  ///   manualUrgent == true && urgentReason.isNotEmpty
+  /// so the stepper will not bounce them back to Upload.
+  void startUrgentTrip({required String reason}) {
+    reset();
+    updateFormData((d) => d.copyWith(
+      manualUrgent: true,
+      urgentReason: reason.trim(),
+    ));
+    goToStep(1); // 0 = Upload, 1 = Details
   }
 }
 

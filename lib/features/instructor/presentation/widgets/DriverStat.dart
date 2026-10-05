@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:jtrips_app/features/instructor/presentation/screens/widgets/schedule.dart';
 import 'package:jtrips_app/core/theme/app_colors.dart';
 
 enum TripStatus {active,onTrip}

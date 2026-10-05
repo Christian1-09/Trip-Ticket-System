@@ -1,7 +1,9 @@
 // presentation/screens/admin_shell.dart
 import 'package:flutter/material.dart';
 import 'package:jtrips_app/features/admin/presentation/screens/DriverScreen.dart';
+import 'package:jtrips_app/features/admin/presentation/screens/admin_settings_screen.dart';
 import 'package:jtrips_app/features/admin/presentation/screens/analysis_screen.dart';
+import 'package:jtrips_app/features/admin/presentation/screens/locations_screen.dart';
 import 'package:jtrips_app/features/admin/presentation/screens/trip_request_screen.dart';
 import 'package:jtrips_app/features/admin/presentation/screens/trip_ticket_log_screen.dart';
 import 'package:jtrips_app/features/admin/presentation/screens/user_driver_request_screen.dart';
@@ -29,10 +31,12 @@ class _AdminShellState extends State<AdminShell> {
     AnalysisScreen(),
     UserDriverRequestScreen(),
     TripTicketLogScreen(),
+    LocationsScreen(),
+    AdminSettingsScreen(),
     Center(child: Text('Profile', style: TextStyle(color: Colors.white))),
   ];
 
-  final _titles = const ['Dashboard', 'Trip Request', 'Vehicle', 'Drivers', 'Analysis','Request', 'Trip Ticket log', 'Profile'];
+  final _titles = const ['Dashboard', 'Trip Request', 'Vehicle', 'Drivers', 'Analysis','Request', 'Trip Ticket log','Add Location' 'Settings', 'Profile'];
 
   @override
   Widget build(BuildContext context) {

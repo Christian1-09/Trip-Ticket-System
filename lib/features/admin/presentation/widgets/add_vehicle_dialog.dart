@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:jtrips_app/features/admin/data/models/vehicle_model.dart';
 import '../providers/vehicle_provider.dart';
+import 'driver_assignment_field.dart';
 
 class AddVehicleDialog extends ConsumerStatefulWidget {
   const AddVehicleDialog({super.key});
@@ -22,6 +24,7 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
   final _yearController = TextEditingController();
 
   PlatformFile? _pickedFile;
+  List<VehicleAssignmentInput> _assignments = const [];
 
   @override
   void dispose() {
@@ -110,6 +113,7 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
       odometerCurrent: _odometerController.text.trim(),
       imageBytes: _pickedFile?.bytes,
       imageFilename: _pickedFile?.name,
+      assignments: _assignments,
     );
   }
 
@@ -314,6 +318,11 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
                         ),
                       ),
                     ],
+                  ),
+
+                  const SizedBox(height: 14),
+                  DriverAssignmentField(
+                    onChanged: (value) => _assignments = value,
                   ),
                   const SizedBox(height: 20),
 

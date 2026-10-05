@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:jtrips_app/core/theme/app_colors.dart';
 import 'package:jtrips_app/features/instructor/presentation/providers/trip_ticket_provider.dart';
 
 import '../../../trip_ticket/data/reference_models.dart';
@@ -11,6 +10,29 @@ import '../../providers/trip_submit_controller.dart';
 
 /// Estimates offered when the place is not on the Admin location list.
 const List<int> kCustomTravelOptions = [30, 60, 90, 120, 180, 240];
+
+/// Light theme colors shared by the Trip Ticket steps.
+class _Palette {
+  static const navy = Color(0xFF0B1E5B);
+  static const blue = Color(0xFF1E6FE0);
+  static const yellow = Color(0xFFFFC629);
+  static const yellowTint = Color(0xFFFFF7DC);
+  static const lightBlue = Color(0xFFE6F0FD);
+  static const softFill = Color(0xFFF6F8FC);
+  static const border = Color(0xFFDCE3EE);
+  static const textDark = Color(0xFF0F1B3D);
+  static const textMuted = Color(0xFF6B7489);
+  static const error = Color(0xFFE53935);
+  static const warning = Color(0xFFB7791F);
+}
+
+const _dropdownIcon = Icon(
+  Icons.keyboard_arrow_down_rounded,
+  color: _Palette.navy,
+  size: 24,
+);
+
+const _fieldTextStyle = TextStyle(color: _Palette.textDark, fontSize: 14);
 
 class DetailsStep extends ConsumerStatefulWidget {
   const DetailsStep({super.key});
@@ -24,6 +46,14 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
   final _passengerController = TextEditingController();
   final _destinationOtherController = TextEditingController();
   final List<TextEditingController> _stopControllers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    final formData = ref.read(tripTicketProvider).formData;
+    _purposeController.text = formData.purpose;
+    _destinationOtherController.text = formData.destination?.address ?? '';
+  }
 
   @override
   void dispose() {
@@ -40,84 +70,127 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
   // Styling helpers
   // ------------------------------------------------------
 
-  InputDecoration _fieldDecoration(String hint, {Widget? prefixIcon}) {
+  static InputDecoration _fieldDecoration(String hint, {Widget? prefixIcon}) {
+    OutlineInputBorder border(Color color, [double width = 1]) =>
+        OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: color, width: width),
+        );
+
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: AppColors.textSecondary.withOpacity(0.6), fontSize: 13),
+      hintStyle: const TextStyle(color: _Palette.textMuted, fontSize: 14),
       prefixIcon: prefixIcon,
       filled: true,
-      fillColor: AppColors.cardDeepBlue,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.statusBlue.withOpacity(0.4)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.statusBlue.withOpacity(0.4)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.accentYellow),
-      ),
+      fillColor: Colors.white,
+      counterStyle: const TextStyle(color: _Palette.textMuted, fontSize: 11),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+      border: border(_Palette.border),
+      enabledBorder: border(_Palette.border),
+      focusedBorder: border(_Palette.blue, 1.5),
+      errorBorder: border(_Palette.error),
+      focusedErrorBorder: border(_Palette.error, 1.5),
     );
   }
 
   Widget _sectionLabel(String text) => Padding(
-    padding: const EdgeInsets.only(bottom: 6, top: 16),
+    padding: const EdgeInsets.only(bottom: 8, top: 18),
     child: Text(
       text,
       style: const TextStyle(
-        color: AppColors.textSecondary,
-        fontSize: 11,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.5,
+        color: _Palette.textDark,
+        fontSize: 12,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.3,
       ),
     ),
   );
 
-  Widget _sectionHeader(IconData icon, String title,
-      {Color iconColor = AppColors.accentYellow}) {
-    return Column(
+  Widget _helperText(String text, {Color color = _Palette.textMuted}) => Padding(
+    padding: const EdgeInsets.only(top: 6),
+    child: Text(text, style: TextStyle(color: color, fontSize: 12, height: 1.35)),
+  );
+
+  Widget _sectionHeader(IconData icon, String title, String subtitle) {
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 4),
-        Row(
-          children: [
-            Icon(icon, color: iconColor, size: 20),
-            const SizedBox(width: 8),
-            Text(title,
-                style: const TextStyle(
-                    color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
-          ],
+        Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: _Palette.lightBlue,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: _Palette.blue, size: 24),
         ),
-        const Divider(color: AppColors.textSecondary, height: 24),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: _Palette.textDark,
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                subtitle,
+                style: const TextStyle(color: _Palette.textMuted, fontSize: 13),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
 
-  Widget _timeBox({required String? value, required String hint, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-        decoration: BoxDecoration(
-          color: AppColors.cardDeepBlue,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.statusBlue.withOpacity(0.4)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.access_time, color: AppColors.statusBlue, size: 15),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                value ?? hint,
-                style: const TextStyle(color: Colors.white, fontSize: 13),
-                overflow: TextOverflow.ellipsis,
+  Widget _sectionDivider() => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 24),
+    child: Divider(color: _Palette.border, thickness: 1, height: 1),
+  );
+
+  /// Tappable box used for the date and time pickers.
+  Widget _pickerBox({
+    required IconData icon,
+    required String? value,
+    required String hint,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _Palette.border),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: _Palette.blue, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  value ?? hint,
+                  style: TextStyle(
+                    color: value == null ? _Palette.textMuted : _Palette.textDark,
+                    fontSize: 14,
+                    fontWeight: value == null ? FontWeight.w400 : FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-          ],
+              _dropdownIcon,
+            ],
+          ),
         ),
       ),
     );
@@ -291,500 +364,703 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
 
     final isSubmitting = ref.watch(tripSubmitControllerProvider) is SubmitTripLoading;
 
-    return Stack(
-      children: [
-        SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _sectionHeader(Icons.description_outlined, 'Trip Details'),
-
-              _sectionLabel('PURPOSE *'),
-              TextField(
-                controller: _purposeController,
-                maxLines: 3,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-                decoration: _fieldDecoration('Describe the purpose of this trip...'),
-                onChanged: (val) => notifier.updateFormData((d) => d.copyWith(purpose: val)),
-              ),
-
-              // ---------- DATE + DEPARTURE ----------
-              Row(
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 22, 16, 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _sectionLabel('DATE *'),
-                        GestureDetector(
-                          onTap: () async {
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate: DateTime.now(),
-                              firstDate: DateTime.now(),
-                              lastDate: DateTime(2030),
-                            );
-                            if (picked != null) {
-                              notifier.updateFormData((d) => d.copyWith(date: picked));
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                            decoration: BoxDecoration(
-                              color: AppColors.cardDeepBlue,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppColors.statusBlue.withOpacity(0.4)),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.calendar_today,
-                                    color: AppColors.statusBlue, size: 15),
-                                const SizedBox(width: 8),
-                                Text(
-                                  formData.date != null
-                                      ? DateFormat('MM/dd/yyyy').format(formData.date!)
-                                      : 'Select date',
-                                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _sectionLabel('DEPARTURE *'),
-                        _timeBox(
-                          value: formData.departureTime,
-                          hint: 'Select time',
-                          onTap: () async {
-                            final time = await _pickTime();
-                            if (time != null) {
-                              notifier.updateFormData((d) => d.copyWith(departureTime: time));
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                  // ================= TRIP DETAILS =================
+                  _sectionHeader(Icons.description_outlined, 'Trip Details',
+                      'Provide the details for this trip request.'),
 
-              // ---------- SERVICE MODE ----------
-              _sectionLabel('HOW WILL THE DRIVER SERVE THIS TRIP? *'),
-              Column(
-                children: ServiceMode.values.map((mode) {
-                  final selected = formData.serviceMode == mode;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: GestureDetector(
-                      onTap: () => notifier.updateFormData((d) => d.copyWith(serviceMode: mode)),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.cardDeepBlue,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: selected
-                                ? AppColors.accentYellow
-                                : AppColors.statusBlue.withOpacity(0.4),
-                            width: selected ? 1.5 : 1,
+                  _sectionLabel('PURPOSE *'),
+                  TextField(
+                    controller: _purposeController,
+                    maxLines: 4,
+                    maxLength: 500,
+                    style: _fieldTextStyle,
+                    decoration: _fieldDecoration('Describe the purpose of this trip...'),
+                    onChanged: (val) =>
+                        notifier.updateFormData((d) => d.copyWith(purpose: val)),
+                  ),
+
+                  // ---------- DATE + DEPARTURE ----------
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _sectionLabel('DATE *'),
+                            _pickerBox(
+                              icon: Icons.calendar_month_outlined,
+                              value: formData.date != null
+                                  ? DateFormat('MM/dd/yyyy').format(formData.date!)
+                                  : null,
+                              hint: 'Select date',
+                              onTap: () async {
+                                final picked = await showDatePicker(
+                                  context: context,
+                                  initialDate: formData.date ?? DateTime.now(),
+                                  firstDate: DateTime.now(),
+                                  lastDate: DateTime(2030),
+                                );
+                                if (picked != null) {
+                                  notifier.updateFormData((d) => d.copyWith(date: picked));
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _sectionLabel('DEPARTURE *'),
+                            _pickerBox(
+                              icon: Icons.access_time_rounded,
+                              value: formData.departureTime,
+                              hint: 'Select time',
+                              onTap: () async {
+                                final time = await _pickTime();
+                                if (time != null) {
+                                  notifier.updateFormData(
+                                          (d) => d.copyWith(departureTime: time));
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // ---------- SERVICE MODE ----------
+                  _sectionLabel('HOW WILL THE DRIVER SERVE THIS TRIP? *'),
+                  Column(
+                    children: ServiceMode.values.map((mode) {
+                      final selected = formData.serviceMode == mode;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _ServiceModeCard(
+                          title: mode.label,
+                          description: mode.description,
+                          selected: selected,
+                          onTap: () =>
+                              notifier.updateFormData((d) => d.copyWith(serviceMode: mode)),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+
+                  // ---------- RETURN OR PICK-UP TIME ----------
+                  if (formData.serviceMode == ServiceMode.wait) ...[
+                    _sectionLabel('RETURN TIME *'),
+                    _pickerBox(
+                      icon: Icons.access_time_rounded,
+                      value: formData.returnTime,
+                      hint: 'Select time',
+                      onTap: () async {
+                        final time = await _pickTime();
+                        if (time != null) {
+                          notifier.updateFormData((d) => d.copyWith(returnTime: time));
+                        }
+                      },
+                    ),
+                    _helperText('The driver stays with the passengers until this time.'),
+                  ] else ...[
+                    _sectionLabel('PICK-UP TIME *'),
+                    _pickerBox(
+                      icon: Icons.access_time_rounded,
+                      value: formData.pickupTime,
+                      hint: 'Select time',
+                      onTap: () async {
+                        final time = await _pickTime();
+                        if (time != null) {
+                          notifier.updateFormData((d) => d.copyWith(pickupTime: time));
+                        }
+                      },
+                    ),
+                    _helperText(
+                        'The driver is free between drop-off and pick-up, so he can serve other trips.'),
+                  ],
+
+                  _sectionLabel('DEPARTMENT *'),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final departmentsAsync = ref.watch(departmentsProvider);
+                      return departmentsAsync.when(
+                        loading: () => const _DropdownLoadingPlaceholder(),
+                        error: (err, _) => _DropdownErrorPlaceholder(
+                          message: 'Could not load departments',
+                          onRetry: () => ref.invalidate(departmentsProvider),
+                        ),
+                        data: (departments) {
+                          final selected = departments.any((d) => d.id == formData.department)
+                              ? formData.department
+                              : null;
+                          return DropdownButtonFormField<String>(
+                            value: selected,
+                            isExpanded: true,
+                            icon: _dropdownIcon,
+                            decoration: _fieldDecoration(
+                              'Select department',
+                              prefixIcon: const Icon(Icons.apartment_rounded,
+                                  color: _Palette.blue, size: 20),
+                            ),
+                            dropdownColor: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            style: _fieldTextStyle,
+                            items: departments
+                                .map((d) => DropdownMenuItem(value: d.id, child: Text(d.name)))
+                                .toList(),
+                            onChanged: (val) =>
+                                notifier.updateFormData((d) => d.copyWith(department: val)),
+                          );
+                        },
+                      );
+                    },
+                  ),
+
+                  // ================= ROUTE =================
+                  _sectionDivider(),
+                  _sectionHeader(Icons.route_outlined, 'Route & Destinations',
+                      'Where is this trip going?'),
+
+                  _sectionLabel('ORIGIN'),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+                    decoration: BoxDecoration(
+                      color: _Palette.softFill,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: _Palette.border),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.trip_origin_rounded, color: _Palette.blue, size: 18),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            '$kBaseLocationName (base)',
+                            style: TextStyle(
+                              color: _Palette.textDark,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              selected
-                                  ? Icons.radio_button_checked
-                                  : Icons.radio_button_unchecked,
-                              color: selected ? AppColors.accentYellow : AppColors.textSecondary,
-                              size: 18,
+                        Icon(Icons.lock_outline_rounded,
+                            color: _Palette.textMuted, size: 16),
+                      ],
+                    ),
+                  ),
+
+                  _sectionLabel('DESTINATION *'),
+                  _StopPicker(
+                    stop: formData.destination,
+                    otherController: _destinationOtherController,
+                    decorationBuilder: _fieldDecoration,
+                    onChanged: notifier.setDestination,
+                  ),
+
+                  const SizedBox(height: 14),
+                  ...List.generate(formData.additionalStops.length, (index) {
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.fromLTRB(12, 4, 4, 12),
+                      decoration: BoxDecoration(
+                        color: _Palette.softFill,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: _Palette.border),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'STOP ${index + 1}',
+                                style: const TextStyle(
+                                  color: _Palette.textDark,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const Spacer(),
+                              IconButton(
+                                tooltip: 'Remove stop',
+                                icon: const Icon(Icons.close_rounded,
+                                    color: _Palette.textMuted, size: 20),
+                                onPressed: () => notifier.removeStop(index),
+                              ),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _StopPicker(
+                              stop: formData.additionalStops[index],
+                              otherController: _stopControllers[index],
+                              decorationBuilder: _fieldDecoration,
+                              onChanged: (stop) =>
+                                  notifier.updateStop(index, stop ?? const TripStopEntry()),
                             ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(mode.label,
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600)),
-                                  const SizedBox(height: 2),
-                                  Text(mode.description,
-                                      style: const TextStyle(
-                                          color: AppColors.textSecondary, fontSize: 11)),
-                                ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+
+                  Material(
+                    color: _Palette.lightBlue,
+                    borderRadius: BorderRadius.circular(12),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => notifier.addStop(),
+                      child: const SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add_rounded, color: _Palette.blue, size: 20),
+                            SizedBox(width: 6),
+                            Text(
+                              'Add another stop',
+                              style: TextStyle(
+                                color: _Palette.blue,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                  );
-                }).toList(),
-              ),
+                  ),
 
-              // ---------- RETURN OR PICK-UP TIME ----------
-              if (formData.serviceMode == ServiceMode.wait) ...[
-                _sectionLabel('RETURN TIME *'),
-                _timeBox(
-                  value: formData.returnTime,
-                  hint: 'When will the trip finish?',
-                  onTap: () async {
-                    final time = await _pickTime();
-                    if (time != null) {
-                      notifier.updateFormData((d) => d.copyWith(returnTime: time));
-                    }
-                  },
-                ),
-                const SizedBox(height: 4),
-                const Text('The driver stays with the passengers until this time.',
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
-              ] else ...[
-                _sectionLabel('PICK-UP TIME *'),
-                _timeBox(
-                  value: formData.pickupTime,
-                  hint: 'When should the driver come back?',
-                  onTap: () async {
-                    final time = await _pickTime();
-                    if (time != null) {
-                      notifier.updateFormData((d) => d.copyWith(pickupTime: time));
-                    }
-                  },
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                    'The driver is free between drop-off and pick-up, so he can serve other trips.',
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
-              ],
+                  // ================= DRIVER + VEHICLE =================
+                  _sectionDivider(),
+                  _sectionHeader(Icons.directions_car_outlined, 'Vehicle & Personnel',
+                      'Choose who drives and what vehicle to use.'),
 
-              _sectionLabel('DEPARTMENT *'),
-              Consumer(
-                builder: (context, ref, _) {
-                  final departmentsAsync = ref.watch(departmentsProvider);
-                  return departmentsAsync.when(
-                    loading: () => const _DropdownLoadingPlaceholder(),
-                    error: (err, _) => _DropdownErrorPlaceholder(
-                      message: 'Could not load departments',
-                      onRetry: () => ref.invalidate(departmentsProvider),
-                    ),
-                    data: (departments) {
-                      final selected = departments.any((d) => d.id == formData.department)
-                          ? formData.department
-                          : null;
-                      return DropdownButtonFormField<String>(
-                        value: selected,
-                        decoration: _fieldDecoration('Select Department...'),
-                        dropdownColor: AppColors.cardDeepBlue,
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
-                        items: departments
-                            .map((d) => DropdownMenuItem(value: d.id, child: Text(d.name)))
-                            .toList(),
-                        onChanged: (val) =>
-                            notifier.updateFormData((d) => d.copyWith(department: val)),
+                  _sectionLabel('DRIVER *'),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final driversAsync = ref.watch(availableDriversProvider(availabilityQuery));
+                      return driversAsync.when(
+                        loading: () => const _DropdownLoadingPlaceholder(),
+                        error: (err, _) => _DropdownErrorPlaceholder(
+                          message: 'Could not load drivers',
+                          onRetry: () =>
+                              ref.invalidate(availableDriversProvider(availabilityQuery)),
+                        ),
+                        data: (drivers) {
+                          final selected =
+                          drivers.any((d) => d.id == formData.driver) ? formData.driver : null;
+                          if (drivers.isEmpty) {
+                            return const _EmptyPlaceholder(
+                              message: 'No driver is free for this schedule. Try another time.',
+                            );
+                          }
+                          return DropdownButtonFormField<String>(
+                            value: selected,
+                            isExpanded: true,
+                            icon: _dropdownIcon,
+                            decoration: _fieldDecoration(
+                              'Select a driver',
+                              prefixIcon: const Icon(Icons.badge_outlined,
+                                  color: _Palette.blue, size: 20),
+                            ),
+                            dropdownColor: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            style: _fieldTextStyle,
+                            items: drivers
+                                .map((d) => DropdownMenuItem(value: d.id, child: Text(d.label)))
+                                .toList(),
+                            onChanged: (val) =>
+                                notifier.updateFormData((d) => d.copyWith(driver: val)),
+                          );
+                        },
                       );
                     },
-                  );
-                },
-              ),
+                  ),
+                  _helperText(
+                    availabilityQuery.isEmpty
+                        ? 'Pick the date and times first to see who is free.'
+                        : 'Only drivers free at this date and time are shown.',
+                  ),
 
-              // ---------- ROUTE ----------
-              const SizedBox(height: 20),
-              _sectionHeader(Icons.location_on_outlined, 'Route & Destinations'),
+                  _sectionLabel('VEHICLE *'),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final vehiclesAsync =
+                      ref.watch(availableVehiclesProvider(availabilityQuery));
+                      return vehiclesAsync.when(
+                        loading: () => const _DropdownLoadingPlaceholder(),
+                        error: (err, _) => _DropdownErrorPlaceholder(
+                          message: 'Could not load vehicles',
+                          onRetry: () =>
+                              ref.invalidate(availableVehiclesProvider(availabilityQuery)),
+                        ),
+                        data: (vehicles) {
+                          final selected = vehicles.any((v) => v.id == formData.vehicle)
+                              ? formData.vehicle
+                              : null;
+                          if (vehicles.isEmpty) {
+                            return const _EmptyPlaceholder(
+                              message: 'No vehicle is free for this schedule. Try another time.',
+                            );
+                          }
+                          return DropdownButtonFormField<String>(
+                            value: selected,
+                            isExpanded: true,
+                            icon: _dropdownIcon,
+                            decoration: _fieldDecoration(
+                              'Select a vehicle',
+                              prefixIcon: const Icon(Icons.airport_shuttle_outlined,
+                                  color: _Palette.blue, size: 20),
+                            ),
+                            dropdownColor: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            style: _fieldTextStyle,
+                            items: vehicles
+                                .map((v) => DropdownMenuItem(value: v.id, child: Text(v.label)))
+                                .toList(),
+                            onChanged: (val) =>
+                                notifier.updateFormData((d) => d.copyWith(vehicle: val)),
+                          );
+                        },
+                      );
+                    },
+                  ),
 
-              _sectionLabel('ORIGIN'),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.cardDeepBlue.withOpacity(0.6),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.statusBlue.withOpacity(0.25)),
-                ),
-                child: Row(
-                  children: const [
-                    Icon(Icons.circle, color: AppColors.statusBlue, size: 10),
-                    SizedBox(width: 10),
-                    Text('$kBaseLocationName (base)',
-                        style: TextStyle(color: Colors.white, fontSize: 13)),
-                    Spacer(),
-                    Icon(Icons.lock_outline, color: AppColors.textSecondary, size: 14),
-                  ],
-                ),
-              ),
-
-              _sectionLabel('DESTINATION *'),
-              _StopPicker(
-                stop: formData.destination,
-                otherController: _destinationOtherController,
-                decorationBuilder: _fieldDecoration,
-                onChanged: notifier.setDestination,
-              ),
-
-              const SizedBox(height: 12),
-              ...List.generate(formData.additionalStops.length, (index) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text('STOP ${index + 1}',
-                              style: const TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600)),
-                          const Spacer(),
-                          IconButton(
-                            icon: const Icon(Icons.close,
-                                color: AppColors.textSecondary, size: 18),
-                            onPressed: () => notifier.removeStop(index),
+                  // ---------- PASSENGERS ----------
+                  _sectionLabel('PASSENGERS'),
+                  TextField(
+                    controller: _passengerController,
+                    style: _fieldTextStyle,
+                    decoration: _fieldDecoration(
+                      'Type a name and press done',
+                      prefixIcon: const Icon(Icons.person_add_alt_1_outlined,
+                          color: _Palette.blue, size: 20),
+                    ),
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (val) {
+                      notifier.addPassenger(val);
+                      _passengerController.clear();
+                    },
+                  ),
+                  if (formData.passengerNames.isNotEmpty) const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: formData.passengerNames.map((name) {
+                      return Chip(
+                        label: Text(
+                          name,
+                          style: const TextStyle(
+                            color: _Palette.navy,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
                           ),
-                        ],
-                      ),
-                      _StopPicker(
-                        stop: formData.additionalStops[index],
-                        otherController: _stopControllers[index],
-                        decorationBuilder: _fieldDecoration,
-                        onChanged: (stop) => notifier.updateStop(index, stop ?? const TripStopEntry()),
-                      ),
-                    ],
+                        ),
+                        backgroundColor: _Palette.lightBlue,
+                        deleteIcon:
+                        const Icon(Icons.close_rounded, size: 16, color: _Palette.blue),
+                        onDeleted: () => notifier.removePassenger(name),
+                        side: BorderSide.none,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      );
+                    }).toList(),
                   ),
-                );
-              }),
 
-              GestureDetector(
-                onTap: () => notifier.addStop(),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  decoration: BoxDecoration(
-                    color: AppColors.cardDeepBlue.withOpacity(0.4),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.statusBlue.withOpacity(0.4)),
+                  // ================= DECLARATIONS =================
+                  _sectionDivider(),
+                  _sectionHeader(Icons.verified_outlined, 'Declarations',
+                      'Please confirm both statements.'),
+                  const SizedBox(height: 14),
+                  _DeclarationCard(
+                    value: formData.certifyOfficialBusiness,
+                    onTap: () => notifier.updateFormData((d) =>
+                        d.copyWith(certifyOfficialBusiness: !formData.certifyOfficialBusiness)),
+                    text: const TextSpan(
+                      children: [
+                        TextSpan(text: 'I hereby certify that I used this car for '),
+                        TextSpan(
+                          text: 'official business',
+                          style: TextStyle(color: _Palette.blue, fontWeight: FontWeight.w700),
+                        ),
+                        TextSpan(text: ' as stated above.'),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.add, color: AppColors.statusBlue, size: 18),
-                      SizedBox(width: 6),
-                      Text('Add another stop',
-                          style: TextStyle(
-                              color: AppColors.statusBlue,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13)),
-                    ],
+                  const SizedBox(height: 10),
+                  _DeclarationCard(
+                    value: formData.certifyRecordCorrectness,
+                    onTap: () => notifier.updateFormData((d) =>
+                        d.copyWith(certifyRecordCorrectness: !formData.certifyRecordCorrectness)),
+                    text: const TextSpan(
+                      children: [
+                        TextSpan(text: 'I hereby certify to the correctness of the '),
+                        TextSpan(
+                          text: 'statement of record of travel',
+                          style: TextStyle(color: _Palette.blue, fontWeight: FontWeight.w700),
+                        ),
+                        TextSpan(text: '.'),
+                      ],
+                    ),
                   ),
+
+                  const SizedBox(height: 26),
+                  _SubmitButton(
+                    enabled: !isSubmitting,
+                    onTap: () => _handleSubmit(formData),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
+            if (isSubmitting)
+              Container(
+                color: Colors.white.withOpacity(0.7),
+                child: const Center(
+                  child: CircularProgressIndicator(color: _Palette.blue),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-              // ---------- DRIVER + VEHICLE ----------
-              const SizedBox(height: 20),
-              _sectionHeader(Icons.directions_car_outlined, 'Vehicle & Personnel'),
+// ------------------------------------------------------
+// Small UI pieces
+// ------------------------------------------------------
 
-              _sectionLabel('DRIVER *'),
-              Consumer(
-                builder: (context, ref, _) {
-                  final driversAsync = ref.watch(availableDriversProvider(availabilityQuery));
-                  return driversAsync.when(
-                    loading: () => const _DropdownLoadingPlaceholder(),
-                    error: (err, _) => _DropdownErrorPlaceholder(
-                      message: 'Could not load drivers',
-                      onRetry: () => ref.invalidate(availableDriversProvider(availabilityQuery)),
+class _ServiceModeCard extends StatelessWidget {
+  final String title;
+  final String description;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ServiceModeCard({
+    required this.title,
+    required this.description,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? _Palette.yellowTint : _Palette.softFill,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: selected ? _Palette.yellow : _Palette.border,
+              width: selected ? 1.6 : 1,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 22,
+                height: 22,
+                margin: const EdgeInsets.only(top: 1),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  border: Border.all(
+                    color: selected ? _Palette.navy : _Palette.textMuted,
+                    width: 2,
+                  ),
+                ),
+                child: selected
+                    ? Center(
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _Palette.navy,
                     ),
-                    data: (drivers) {
-                      final selected =
-                      drivers.any((d) => d.id == formData.driver) ? formData.driver : null;
-                      if (drivers.isEmpty) {
-                        return const _EmptyPlaceholder(
-                          message: 'No driver is free for this schedule. Try another time.',
-                        );
-                      }
-                      return DropdownButtonFormField<String>(
-                        value: selected,
-                        decoration: _fieldDecoration('Select a driver...'),
-                        dropdownColor: AppColors.cardDeepBlue,
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
-                        items: drivers
-                            .map((d) => DropdownMenuItem(value: d.id, child: Text(d.label)))
-                            .toList(),
-                        onChanged: (val) =>
-                            notifier.updateFormData((d) => d.copyWith(driver: val)),
-                      );
-                    },
-                  );
-                },
+                  ),
+                )
+                    : null,
               ),
-              const SizedBox(height: 4),
-              Text(
-                availabilityQuery.isEmpty
-                    ? 'Pick the date and times first to see who is free.'
-                    : 'Only drivers free at this date and time are shown.',
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
-              ),
-
-              _sectionLabel('VEHICLE *'),
-              Consumer(
-                builder: (context, ref, _) {
-                  final vehiclesAsync = ref.watch(availableVehiclesProvider(availabilityQuery));
-                  return vehiclesAsync.when(
-                    loading: () => const _DropdownLoadingPlaceholder(),
-                    error: (err, _) => _DropdownErrorPlaceholder(
-                      message: 'Could not load vehicles',
-                      onRetry: () => ref.invalidate(availableVehiclesProvider(availabilityQuery)),
-                    ),
-                    data: (vehicles) {
-                      final selected = vehicles.any((v) => v.id == formData.vehicle)
-                          ? formData.vehicle
-                          : null;
-                      if (vehicles.isEmpty) {
-                        return const _EmptyPlaceholder(
-                          message: 'No vehicle is free for this schedule. Try another time.',
-                        );
-                      }
-                      return DropdownButtonFormField<String>(
-                        value: selected,
-                        decoration: _fieldDecoration('Select a vehicle...'),
-                        dropdownColor: AppColors.cardDeepBlue,
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
-                        items: vehicles
-                            .map((v) => DropdownMenuItem(value: v.id, child: Text(v.label)))
-                            .toList(),
-                        onChanged: (val) =>
-                            notifier.updateFormData((d) => d.copyWith(vehicle: val)),
-                      );
-                    },
-                  );
-                },
-              ),
-
-              // ---------- PASSENGERS ----------
-              _sectionLabel('PASSENGER\'S NAME'),
-              TextField(
-                controller: _passengerController,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-                decoration: _fieldDecoration('Enter passenger name...'),
-                textInputAction: TextInputAction.done,
-                onSubmitted: (val) {
-                  notifier.addPassenger(val);
-                  _passengerController.clear();
-                },
-              ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: formData.passengerNames.map((name) {
-                  return Chip(
-                    label: Text(name, style: const TextStyle(color: Colors.white, fontSize: 12)),
-                    backgroundColor: AppColors.statusBlue.withOpacity(0.25),
-                    deleteIcon: const Icon(Icons.close, size: 16, color: AppColors.statusBlue),
-                    onDeleted: () => notifier.removePassenger(name),
-                    side: BorderSide(color: AppColors.statusBlue.withOpacity(0.5)),
-                  );
-                }).toList(),
-              ),
-
-              // ---------- DECLARATIONS ----------
-              const SizedBox(height: 20),
-              const Text('DECLARATIONS',
-                  style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5)),
-              const SizedBox(height: 8),
-              _declarationCheckbox(
-                value: formData.certifyOfficialBusiness,
-                onChanged: (val) => notifier
-                    .updateFormData((d) => d.copyWith(certifyOfficialBusiness: val ?? false)),
-                text: const TextSpan(
-                  style: TextStyle(color: Colors.white, fontSize: 13),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextSpan(text: 'I hereby certify that I used this car for '),
-                    TextSpan(
-                      text: 'official business',
-                      style: TextStyle(color: AppColors.statusBlue, fontWeight: FontWeight.w600),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: _Palette.textDark,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
-                    TextSpan(text: ' as stated above.'),
+                    const SizedBox(height: 3),
+                    Text(
+                      description,
+                      style: const TextStyle(
+                        color: _Palette.textMuted,
+                        fontSize: 12.5,
+                        height: 1.35,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
-              _declarationCheckbox(
-                value: formData.certifyRecordCorrectness,
-                onChanged: (val) => notifier
-                    .updateFormData((d) => d.copyWith(certifyRecordCorrectness: val ?? false)),
-                text: const TextSpan(
-                  style: TextStyle(color: Colors.white, fontSize: 13),
-                  children: [
-                    TextSpan(text: 'I hereby certify to the correctness of the '),
-                    TextSpan(
-                      text: 'statement of record of travel',
-                      style: TextStyle(color: AppColors.statusBlue, fontWeight: FontWeight.w600),
-                    ),
-                    TextSpan(text: '.'),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isSubmitting ? null : () => _handleSubmit(formData),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.statusBlue,
-                    disabledBackgroundColor: AppColors.statusBlue.withOpacity(0.4),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                  child: const Text('SUBMIT',
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-                ),
-              ),
-              const SizedBox(height: 24),
             ],
           ),
         ),
-        if (isSubmitting)
-          Container(
-            color: Colors.black54,
-            child: const Center(child: CircularProgressIndicator()),
-          ),
-      ],
+      ),
     );
   }
+}
 
-  Widget _declarationCheckbox({
-    required bool value,
-    required ValueChanged<bool?> onChanged,
-    required TextSpan text,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Checkbox(
-          value: value,
-          onChanged: onChanged,
-          activeColor: AppColors.statusBlue,
-          side: BorderSide(color: AppColors.textSecondary.withOpacity(0.6)),
-        ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: RichText(text: text),
+class _DeclarationCard extends StatelessWidget {
+  final bool value;
+  final VoidCallback onTap;
+  final TextSpan text;
+
+  const _DeclarationCard({
+    required this.value,
+    required this.onTap,
+    required this.text,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: value ? _Palette.lightBlue.withOpacity(0.6) : _Palette.softFill,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: value ? _Palette.blue.withOpacity(0.5) : _Palette.border,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: value ? _Palette.navy : Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: value ? _Palette.navy : _Palette.navy.withOpacity(0.6),
+                    width: 2,
+                  ),
+                ),
+                child: value
+                    ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: RichText(
+                  text: TextSpan(
+                    style: const TextStyle(
+                      color: _Palette.textDark,
+                      fontSize: 13.5,
+                      height: 1.4,
+                    ),
+                    children: [text],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
+    );
+  }
+}
+
+class _SubmitButton extends StatelessWidget {
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _SubmitButton({required this.enabled, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: enabled
+            ? [
+          BoxShadow(
+            color: _Palette.yellow.withOpacity(0.45),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ]
+            : null,
+      ),
+      child: ElevatedButton(
+        onPressed: enabled ? onTap : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _Palette.yellow,
+          disabledBackgroundColor: _Palette.yellow.withOpacity(0.35),
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        ),
+        child: const Stack(
+          alignment: Alignment.center,
+          children: [
+            Text(
+              'Submit Trip Ticket',
+              style: TextStyle(
+                color: _Palette.textDark,
+                fontSize: 16.5,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Icon(Icons.send_rounded, color: _Palette.textDark, size: 22),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -838,11 +1114,15 @@ class _StopPicker extends ConsumerWidget {
             DropdownButtonFormField<String>(
               value: dropdownValue,
               isExpanded: true,
-              decoration: decorationBuilder('Select a place...',
-                  prefixIcon:
-                  const Icon(Icons.location_on, color: AppColors.accentYellow, size: 18)),
-              dropdownColor: AppColors.cardDeepBlue,
-              style: const TextStyle(color: Colors.white, fontSize: 13),
+              icon: _dropdownIcon,
+              decoration: decorationBuilder(
+                'Select a place',
+                prefixIcon: const Icon(Icons.location_on_rounded,
+                    color: _Palette.error, size: 20),
+              ),
+              dropdownColor: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              style: _fieldTextStyle,
               items: [
                 ...locations.map(
                       (l) => DropdownMenuItem(value: l.id, child: Text(l.label)),
@@ -870,27 +1150,36 @@ class _StopPicker extends ConsumerWidget {
               const Text(
                 'No places have been set up yet. Ask the admin to add them, '
                     'or use "Other" for now.',
-                style: TextStyle(color: AppColors.accentYellow, fontSize: 11),
+                style: TextStyle(color: _Palette.warning, fontSize: 12),
               ),
             ],
             if (isOther) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               TextField(
                 controller: otherController,
-                style: const TextStyle(color: Colors.white, fontSize: 13),
-                decoration: decorationBuilder('Type the place name... *'),
+                style: _fieldTextStyle,
+                decoration: decorationBuilder(
+                  'Type the place name *',
+                  prefixIcon:
+                  const Icon(Icons.edit_location_alt_outlined, color: _Palette.blue, size: 20),
+                ),
                 onChanged: (val) => onChanged(
                   (stop ?? const TripStopEntry())
                       .copyWith(address: val, useCustom: true, clearLocationId: true),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               DropdownButtonFormField<int>(
                 value: (stop?.travelMinutes ?? 0) > 0 ? stop!.travelMinutes : null,
                 isExpanded: true,
-                decoration: decorationBuilder('One-way travel time from base... *'),
-                dropdownColor: AppColors.cardDeepBlue,
-                style: const TextStyle(color: Colors.white, fontSize: 13),
+                icon: _dropdownIcon,
+                decoration: decorationBuilder(
+                  'One-way travel time from base *',
+                  prefixIcon: const Icon(Icons.timer_outlined, color: _Palette.blue, size: 20),
+                ),
+                dropdownColor: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                style: _fieldTextStyle,
                 items: kCustomTravelOptions
                     .map((m) => DropdownMenuItem(
                   value: m,
@@ -905,11 +1194,11 @@ class _StopPicker extends ConsumerWidget {
                       .copyWith(travelMinutes: val, useCustom: true, clearLocationId: true));
                 },
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               const Text(
                 'Roughly how long is the one-way drive from base? This is used to check '
                     'whether the driver is free.',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+                style: TextStyle(color: _Palette.textMuted, fontSize: 12, height: 1.35),
               ),
             ],
           ],
@@ -927,14 +1216,24 @@ class _EmptyPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.cardDeepBlue,
+        color: _Palette.yellowTint,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.accentYellow.withOpacity(0.5)),
+        border: Border.all(color: _Palette.yellow),
       ),
-      child: Text(message,
-          style: const TextStyle(color: AppColors.accentYellow, fontSize: 12)),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline_rounded, color: _Palette.warning, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(color: _Palette.textDark, fontSize: 13),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -948,15 +1247,15 @@ class _DropdownLoadingPlaceholder extends StatelessWidget {
       height: 52,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: AppColors.cardDeepBlue,
+        color: _Palette.softFill,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.statusBlue.withOpacity(0.4)),
+        border: Border.all(color: _Palette.border),
       ),
       alignment: Alignment.centerLeft,
       child: const SizedBox(
-        width: 16,
-        height: 16,
-        child: CircularProgressIndicator(strokeWidth: 2),
+        width: 18,
+        height: 18,
+        child: CircularProgressIndicator(strokeWidth: 2, color: _Palette.blue),
       ),
     );
   }
@@ -970,18 +1269,27 @@ class _DropdownErrorPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.only(left: 14, right: 4, top: 4, bottom: 4),
       decoration: BoxDecoration(
-        color: AppColors.cardDeepBlue,
+        color: const Color(0xFFFFF5F5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.redAccent.withOpacity(0.5)),
+        border: Border.all(color: _Palette.error.withOpacity(0.5)),
       ),
       child: Row(
         children: [
+          const Icon(Icons.error_outline_rounded, color: _Palette.error, size: 20),
+          const SizedBox(width: 10),
           Expanded(
-            child: Text(message, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
+            child: Text(message,
+                style: const TextStyle(color: _Palette.error, fontSize: 13)),
           ),
-          TextButton(onPressed: onRetry, child: const Text('Retry')),
+          TextButton(
+            onPressed: onRetry,
+            child: const Text(
+              'Retry',
+              style: TextStyle(color: _Palette.blue, fontWeight: FontWeight.w700),
+            ),
+          ),
         ],
       ),
     );

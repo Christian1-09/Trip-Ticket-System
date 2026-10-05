@@ -81,6 +81,25 @@ class ApiClient {
     return _handleResponse(response);
   }
 
+  Future<Map<String, dynamic>> delete(
+      String path, {
+        String? accessToken,
+      }) async {
+    final response = await _client
+        .delete(
+      _uri(path),
+      headers: _headers(accessToken),
+    )
+        .timeout(
+      _timeout,
+      onTimeout: () => throw ApiException(
+        'Request timed out. Check that the backend is running and reachable.',
+        408,
+      ),
+    );
+    return _handleResponse(response);
+  }
+
   Future<Map<String, dynamic>> get(
       String path, {
         String? accessToken,

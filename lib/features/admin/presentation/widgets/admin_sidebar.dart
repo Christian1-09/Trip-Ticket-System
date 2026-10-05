@@ -15,7 +15,10 @@ const adminNavItems = [
   AdminNavItem(Icons.bar_chart_outlined, 'Analysis'),
   AdminNavItem(Icons.person_add_alt_outlined, 'Request'),
   AdminNavItem(Icons.receipt_long_outlined, 'Trip Ticket log'),
+  AdminNavItem(Icons.location_city, 'Add Location'),
+  AdminNavItem(Icons.settings, 'Settings'),
   AdminNavItem(Icons.person_outline, 'Profile'),
+
 ];
 
 class AdminSidebar extends StatelessWidget {

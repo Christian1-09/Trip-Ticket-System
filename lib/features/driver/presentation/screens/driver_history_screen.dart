@@ -1,66 +1,39 @@
-import 'package:flutter/cupertino.dart';
+// features/driver/presentation/screens/driver_history_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jtrips_app/core/theme/app_colors.dart';
-import 'package:jtrips_app/core/theme/media.dart';
-import 'package:jtrips_app/features/instructor/presentation/screens/widgets/schedule.dart';
 
-class DriverHistoryScreen extends StatefulWidget {
+import '../providers/driver_trip_providers.dart';
+import '../widgets/driver_trip_cards.dart';
+
+/// Completed trips, most recent first.
+class DriverHistoryScreen extends ConsumerWidget {
   const DriverHistoryScreen({super.key});
 
   @override
-  State<DriverHistoryScreen> createState() => _DriverHistoryScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final historyAsync = ref.watch(driverHistoryTripsProvider);
 
-class _DriverHistoryScreenState extends State<DriverHistoryScreen> {
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-          bottom: false,
+        bottom: false,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(driverHistoryTripsProvider);
+            await ref.read(driverHistoryTripsProvider.future);
+          },
           child: ListView(
-            children: [
-              const SizedBox( height: 24,),
-              Container(
-                padding: EdgeInsets.fromLTRB(20, 0, 20, 24),
-                child:
-                Column(
-                  children: [
-                    ScheduleCard(
-                        name: "Steve P. Baroro",
-                        plateNumber: "SJJ 963",
-                        vehicleType: "CANTER",
-                        imagePath: AppMedia.driver1,
-                        status: TripStatus.confirmed),
-                    ScheduleCard(
-                        name: "Steve P. Baroro",
-                        plateNumber: "SJJ 963",
-                        vehicleType: "CANTER",
-                        imagePath: AppMedia.driver2,
-                        status: TripStatus.confirmed),
-                    ScheduleCard(
-                        name: "Steve P. Baroro",
-                        plateNumber: "SJJ 963",
-                        vehicleType: "CANTER",
-                        imagePath: AppMedia.driver3,
-                        status: TripStatus.confirmed),
-                    ScheduleCard(
-                        name: "Steve P. Baroro",
-                        plateNumber: "SJJ 963",
-                        vehicleType: "CANTER",
-                        imagePath: AppMedia.driver4,
-                        status: TripStatus.confirmed),
-                    ScheduleCard(
-                        name: "Steve P. Baroro",
-                        plateNumber: "SJJ 963",
-                        vehicleType: "CANTER",
-                        imagePath: AppMedia.driver1,
-                        status: TripStatus.confirmed),
-                  ],
-                ),
-              )
-            ],
-          )),
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            children: buildDriverTripCards(
+              historyAsync,
+              emptyText: 'No completed trips yet.',
+              onRetry: () => ref.invalidate(driverHistoryTripsProvider),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

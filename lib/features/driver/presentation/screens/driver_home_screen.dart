@@ -1,145 +1,172 @@
-import 'package:flutter/cupertino.dart';
+// features/driver/presentation/screens/driver_home_screen.dart
 import 'package:flutter/material.dart';
-import 'package:jtrips_app/core/theme/app_colors.dart';
-import 'package:jtrips_app/core/theme/media.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jtrips_app/features/driver/presentation/NavigateRoutePage/All_Trip_Request.dart';
 import 'package:jtrips_app/features/driver/presentation/NavigateRoutePage/Notifications.dart';
-import 'package:jtrips_app/features/driver/presentation/NavigateRoutePage/TripInformation.dart';
-import 'package:jtrips_app/features/driver/presentation/widgets/DriverHeaderSection.dart';
-import 'package:jtrips_app/features/driver/presentation/widgets/driver_stats.dart';
-import 'package:jtrips_app/features/instructor/presentation/screens/widgets/_DriverHeader.dart';
-import 'package:jtrips_app/features/instructor/presentation/screens/widgets/schedule.dart';
-import 'package:jtrips_app/features/instructor/presentation/screens/widgets/search_bar_widget.dart';
-import 'package:jtrips_app/features/instructor/presentation/screens/widgets/stat_card.dart';
 
-class DriverHomeScreen extends StatefulWidget {
+import '../providers/driver_trip_providers.dart';
+import '../widgets/driver_home_widgets.dart';
+import '../widgets/driver_trip_cards.dart';
+
+class DriverHomeScreen extends ConsumerWidget {
   const DriverHomeScreen({super.key});
 
   @override
-  State<DriverHomeScreen> createState() => _DriverHomeScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profileAsync = ref.watch(driverProfileProvider);
+    final activeAsync = ref.watch(driverActiveTripsProvider);
 
-class _DriverHomeScreenState extends State<DriverHomeScreen> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-          child: Column(
-            children: [
-              // ── FIXED: Bottom Menu ────────────────────────────────────────────
-              // DriverHeader(title: "Assigned Trips",totalDriver: 4,label: "View all",onTap: () {
-              //   Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => const AllTripRequest(), ));
-              // },),
-              DriverHeaderSection(
-                userName: "Steve P. Bareno",
-                driverId: "DRV-2024-012",
-                onNotificationTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => const Notifications(),));
-                },
+    final profile = profileAsync.valueOrNull;
+    final active = activeAsync.valueOrNull ?? [];
+    final now = DateTime.now();
+    final todayCount = active
+        .where((t) =>
+    t.trip.date.year == now.year &&
+        t.trip.date.month == now.month &&
+        t.trip.date.day == now.day)
+        .length;
 
+    void openAll() => Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const AllTripRequest()),
+    );
+
+    final awaiting = profile?.awaitingCount ?? 0;
+    final upcoming = profile?.upcomingCount ?? 0;
+    final completed = profile?.completedCount ?? 0;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: kDhPageBg,
+        body: Column(
+          children: [
+            DriverHomeHeader(
+              userName: profile?.fullName ?? '...',
+              driverId: profile?.driverCode ?? '',
+              onNotificationTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const Notifications()),
               ),
-              // ── FIXED: Search Bar ────────────────────────────────────────────
-              Transform.translate(
-                offset: const Offset(0, -24),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: SearchBarWidget(onFilterTap: () {}),
+            ),
+            Transform.translate(
+              offset: const Offset(0, -26),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: DriverSearchBar(onFilterTap: () {}),
+              ),
+            ),
+            Expanded(
+              child: Transform.translate(
+                offset: const Offset(0, -14),
+                child: RefreshIndicator(
+                  color: kDhBlue,
+                  onRefresh: () async {
+                    refreshDriverData(ref);
+                    await ref.read(driverActiveTripsProvider.future);
+                  },
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                    children: [
+                      DriverStatsRow(items: [
+                        DriverStat(
+                          icon: Icons.calendar_month_rounded,
+                          color: kDhBlue,
+                          label: 'NEW',
+                          value: '$awaiting',
+                          caption: 'Pending trips',
+                          onTap: openAll,
+                        ),
+                        DriverStat(
+                          icon: Icons.schedule_rounded,
+                          color: kDhYellow,
+                          label: 'UPCOMING',
+                          value: '$upcoming',
+                          caption: 'Upcoming trips',
+                          onTap: openAll,
+                        ),
+                        DriverStat(
+                          icon: Icons.check_circle_outline_rounded,
+                          color: kDhGreen,
+                          label: 'COMPLETED',
+                          value: '$completed',
+                          caption: 'Completed trips',
+                          onTap: openAll,
+                        ),
+                      ]),
+                      const SizedBox(height: 14),
+                      GridView.count(
+                        shrinkWrap: true,
+                        padding: EdgeInsets.zero,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 10,
+                        crossAxisSpacing: 10,
+                        childAspectRatio: 1.55,
+                        children: [
+                          DriverActionTile(
+                            icon: Icons.calendar_month_rounded,
+                            iconBg: kDhYellow,
+                            iconColor: kDhNavy,
+                            watermark: Icons.event_note_rounded,
+                            title: 'New Bookings',
+                            subtitle: '$awaiting awaiting you',
+                            onTap: openAll,
+                          ),
+                          DriverActionTile(
+                            icon: Icons.event_available_rounded,
+                            iconBg: kDhBlue,
+                            iconColor: Colors.white,
+                            watermark: Icons.calendar_month_rounded,
+                            title: 'Today',
+                            subtitle:
+                            '$todayCount trip${todayCount == 1 ? '' : 's'} today',
+                            onTap: openAll,
+                          ),
+                          DriverActionTile(
+                            icon: Icons.location_on_rounded,
+                            iconBg: kDhBlue,
+                            iconColor: Colors.white,
+                            watermark: Icons.map_rounded,
+                            title: 'Navigation',
+                            subtitle: 'Open map',
+                            onTap: () {}, // GPS feature, later
+                          ),
+                          DriverActionTile(
+                            icon: Icons.star_rounded,
+                            iconBg: kDhBlue,
+                            iconColor: Colors.white,
+                            watermark: Icons.star_rounded,
+                            title: 'My Performance',
+                            subtitle: profile?.ratingLabel ?? '—',
+                            onTap: () {},
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      DriverSectionHeader(
+                        title: 'Assigned Trips',
+                        count: active.length,
+                        onViewAll: openAll,
+                      ),
+                      const SizedBox(height: 12),
+                      ...buildDriverTripCards(
+                        activeAsync,
+                        limit: 3,
+                        homeStyle: true,
+                        emptyText: 'No trips assigned to you right now.',
+                        onRetry: () => ref.invalidate(driverActiveTripsProvider),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              // ── SCROLLABLE: Everything below ─────────────────────────────
-              Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                    children: [
-                      //Driver stats
-                      const StatsRow(items: [
-                        StatItem(label: "NEW TRIPS", value: "12", accentColor: AppColors.statusBlue),
-                        StatItem(label: "NEW TRIPS", value: "6", valueColor: AppColors.accentYellow,accentColor: AppColors.accentYellow),
-                        StatItem(label: "NEW TRIPS", value: "120", accentColor: AppColors.statusGreen, valueColor: AppColors.statusGreen),
-                      ],),
-
-                      const SizedBox(height: 24,),
-                    GridView.count(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: 1.3,
-                      children: [
-                        DashboardActionCard(
-                          icon: Icons.send_rounded,
-                          iconBackgroundColor: AppColors.accentYellow.withOpacity(0.2),
-                          iconColor: AppColors.accentYellow,
-                          title: "New Bookings",
-                          subtitle: "2 awaiting you",
-                          onTap: () {},
-                        ),
-                        DashboardActionCard(
-                          icon: Icons.calendar_today_rounded,
-                          iconBackgroundColor: AppColors.statusBlue.withOpacity(0.2),
-                          iconColor: AppColors.statusBlue,
-                          title: "New Bookings",
-                          subtitle: "3 trip today",
-                          onTap: () {},
-                        ),
-                        DashboardActionCard(
-                          icon: Icons.location_on_rounded,
-                          iconBackgroundColor: AppColors.statusBlue.withOpacity(0.2),
-                          iconColor: AppColors.statusBlue,
-                          title: "Navigation",
-                          subtitle: "Open map",
-                          onTap: () {},
-                        ),
-                        DashboardActionCard(
-                          icon: Icons.bar_chart_rounded,
-                          iconBackgroundColor: AppColors.accentYellow.withOpacity(0.2),
-                          iconColor: AppColors.accentYellow,
-                          title: "My Performance",
-                          subtitle: "4.8 Rating",
-                          onTap: () {},
-                        ),
-                      ],
-
-                    ),
-                      const SizedBox(height: 24,),
-                      DriverHeader(title: "Assigned Trips",totalDriver: 4,label: "View all",onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => const AllTripRequest(), ));
-                      },),
-                      const SizedBox(height: 14,),
-                      ScheduleCard(
-                          name: "Steve P. 1Baroro",
-                          plateNumber: "SJJ 963",
-                          vehicleType: "CANTER",
-                          imagePath: AppMedia.driver3,
-                          onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => const TripInformation()));
-                          },
-                          status: TripStatus.pending),
-                      ScheduleCard(
-                          name: "Steve P. Baroro",
-                          plateNumber: "SJJ 963",
-                          vehicleType: "CANTER",
-                          imagePath: AppMedia.driver4,
-                          status: TripStatus.pending),
-                      ScheduleCard(
-                          name: "Steve P. Baroro",
-                          plateNumber: "SJJ 963",
-                          vehicleType: "CANTER",
-                          imagePath: AppMedia.driver2,
-                          status: TripStatus.confirmed),
-                      ScheduleCard(
-                          name: "Steve P. Baroro",
-                          plateNumber: "SJJ 963",
-                          imagePath: AppMedia.driver1,
-                          vehicleType: "CANTER",
-                          status: TripStatus.confirmed),
-                    ],
-              ),
-              )
-            ],
-          )),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

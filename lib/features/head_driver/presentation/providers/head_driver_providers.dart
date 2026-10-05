@@ -31,7 +31,7 @@ FutureProvider.family<List<ReplacementDriver>, String>((ref, tripId) {
 
 /// Total items waiting for the Head Driver — drives the tab badge.
 final hdWaitingCountProvider = Provider<int>((ref) {
-  final pending = ref.watch(hdPendingTripsProvider).value?.length ?? 0;
-  final declined = ref.watch(hdDeclinedTripsProvider).value?.length ?? 0;
+  final pending = ref.watch(hdPendingTripsProvider).valueOrNull?.length ?? 0;
+  final declined = ref.watch(hdDeclinedTripsProvider).valueOrNull?.length ?? 0;
   return pending + declined;
 });

@@ -23,7 +23,7 @@ final driverSearchProvider = StateProvider<String>((ref) => '');
 final driverStatusFilterProvider = StateProvider<String>((ref) => 'All');
 
 final filteredDriverListProvider = Provider<List<AdminDriverModel>>((ref) {
-  final drivers = ref.watch(driverListProvider).value ?? [];
+  final drivers = ref.watch(driverListProvider).valueOrNull ?? [];
   final search = ref.watch(driverSearchProvider).trim().toLowerCase();
   final statusFilter = ref.watch(driverStatusFilterProvider);
 
@@ -56,6 +56,6 @@ final filteredDriverListProvider = Provider<List<AdminDriverModel>>((ref) {
 /// True when someone already holds the Head Driver role, so the promote
 /// option can be hidden for everyone else (only one is allowed at a time).
 final hasHeadDriverProvider = Provider<bool>((ref) {
-  final drivers = ref.watch(driverListProvider).value ?? [];
+  final drivers = ref.watch(driverListProvider).valueOrNull ?? [];
   return drivers.any((d) => d.isHeadDriver);
 });

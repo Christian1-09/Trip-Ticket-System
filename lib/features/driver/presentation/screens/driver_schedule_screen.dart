@@ -1,80 +1,49 @@
-import 'package:flutter/cupertino.dart';
+// features/driver/presentation/screens/driver_schedule_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jtrips_app/core/theme/app_colors.dart';
-import 'package:jtrips_app/core/theme/media.dart';
 import 'package:jtrips_app/features/driver/presentation/widgets/HeaderText_Schedule.dart';
-import 'package:jtrips_app/features/instructor/presentation/screens/widgets/schedule.dart';
-import 'package:jtrips_app/features/instructor/presentation/screens/widgets/search_bar_widget.dart';
 
-class DriverScheduleScreen extends StatefulWidget {
 
-  const DriverScheduleScreen({
-    super.key,
+import '../../../instructor/presentation/widgets/search_bar_widget.dart';
+import '../providers/driver_trip_providers.dart';
+import '../widgets/driver_trip_cards.dart';
 
-  });
+/// Upcoming and ongoing trips, soonest first.
+class DriverScheduleScreen extends ConsumerWidget {
+  const DriverScheduleScreen({super.key});
 
   @override
-  State<DriverScheduleScreen> createState() => _DriverScheduleScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final activeAsync = ref.watch(driverActiveTripsProvider);
+    final count = activeAsync.valueOrNull?.length ?? 0;
 
-class _DriverScheduleScreenState extends State<DriverScheduleScreen> {
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         bottom: false,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            refreshDriverData(ref);
+            await ref.read(driverActiveTripsProvider.future);
+          },
           child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 54),
             children: [
-              const SizedBox(height: 14,),
-              Container(
-                padding: EdgeInsets.fromLTRB(20, 0, 20, 54),
-                child:
-                    Column(
-                      children: [
-                        SearchBarWidget(onFilterTap: () {},),
-                        const SizedBox(height: 14,),
-                        HeaderTextSchedule(totalDriver: 3,),
-
-                        const SizedBox(height: 24,),
-                        ScheduleCard(
-                            name: "Steve P. Baroro",
-                            plateNumber: "SJJ 963",
-                            vehicleType: "CANTER",
-                            imagePath: AppMedia.driver1,
-                            status: TripStatus.pending),
-                        ScheduleCard(
-                            name: "Steve P. Baroro",
-                            plateNumber: "SJJ 963",
-                            vehicleType: "CANTER",
-                            imagePath: AppMedia.driver2,
-                            status: TripStatus.confirmed),
-                        ScheduleCard(
-                            name: "Steve P. Baroro",
-                            plateNumber: "SJJ 963",
-                            vehicleType: "CANTER",
-                            imagePath: AppMedia.driver3,
-                            status: TripStatus.pending),
-                        ScheduleCard(
-                            name: "Steve P. Baroro",
-                            plateNumber: "SJJ 963",
-                            vehicleType: "CANTER",
-                            imagePath: AppMedia.driver3,
-                            status: TripStatus.confirmed),
-                        ScheduleCard(
-                            name: "Steve P. Baroro",
-                            plateNumber: "SJJ 963",
-                            vehicleType: "CANTER",
-                            imagePath: AppMedia.driver3,
-                            status: TripStatus.pending),
-                      ],
-                    ),
-
-
+              SearchBarWidget(onFilterTap: () {}),
+              const SizedBox(height: 14),
+              HeaderTextSchedule(totalDriver: count),
+              const SizedBox(height: 24),
+              ...buildDriverTripCards(
+                activeAsync,
+                emptyText: 'Nothing scheduled. New trips appear here once assigned.',
+                onRetry: () => ref.invalidate(driverActiveTripsProvider),
               ),
-
             ],
-          )),
+          ),
+        ),
+      ),
     );
   }
 }
