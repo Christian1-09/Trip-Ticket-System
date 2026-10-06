@@ -171,6 +171,13 @@ class AdminTripModel {
   final String vehicleModel;
   final String vehiclePlate;
 
+  /// Relative or absolute path to the vehicle photo, if the backend sends one.
+  /// Pass it through ApiConfig.mediaUrl(...) before loading.
+  final String? vehicleImageUrl;
+
+  /// Seats in the vehicle, if the backend sends it.
+  final int? vehicleCapacity;
+
   final List<String> passengers;
   final List<AdminStop> stops;
 
@@ -195,6 +202,8 @@ class AdminTripModel {
     required this.departmentCode,
     required this.vehicleModel,
     required this.vehiclePlate,
+    this.vehicleImageUrl,
+    this.vehicleCapacity,
     required this.passengers,
     required this.stops,
   });
@@ -232,6 +241,8 @@ class AdminTripModel {
       departmentCode: department?['code'] as String? ?? '—',
       vehicleModel: vehicle?['model'] as String? ?? '—',
       vehiclePlate: vehicle?['plateNumber'] as String? ?? '—',
+      vehicleImageUrl: vehicle?['imageUrl'] as String?,
+      vehicleCapacity: (vehicle?['capacity'] as num?)?.toInt(),
       passengers: passengerList
           .map((p) => (p as Map<String, dynamic>)['name'] as String? ?? '—')
           .toList(),
@@ -266,6 +277,13 @@ class AdminTripModel {
   }
 
   String get endTimeTitle => isWaitMode ? 'Return Time:' : 'Pick-up Time:';
+
+  /// "1:30 PM - 3:30 PM", or just "1:30 PM" when there is no return /
+  /// pick-up time yet (avoids showing "1:30 PM - —").
+  String get timeRangeLabel {
+    final end = endTimeLabel;
+    return end == '—' ? departureLabel : '$departureLabel - $end';
+  }
 
   String get originLabel =>
       stops.isEmpty ? '—' : stops.first.address;

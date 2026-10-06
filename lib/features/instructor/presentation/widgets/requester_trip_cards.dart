@@ -64,7 +64,7 @@ class RequesterTripCard extends StatelessWidget {
           destination: trip.destinationLabel,
           origin: null,
           passengerCount: null,
-          time: '${trip.departureLabel} - ${trip.endTimeLabel}',
+          time: trip.timeRangeLabel,
           driverName: trip.driver.fullName,
           vehicleLabel: '${trip.vehiclePlate} ${trip.vehicleModel}',
           status: item.cardStatus,
@@ -82,7 +82,7 @@ class RequesterTripCard extends StatelessWidget {
           vehicleType: trip.vehicleModel,
           status: item.cardStatus,
           date: '${_cardDate.format(trip.date)} · ${trip.destinationLabel}',
-          time: '${trip.departureLabel} - ${trip.endTimeLabel}',
+          time: trip.timeRangeLabel,
           isUrgent: trip.isUrgent,
           onTap: open,
         );
@@ -335,7 +335,7 @@ class _MyTripCard extends StatelessWidget {
                     const _VDivider(),
                     _InfoItem(
                       icon: Icons.access_time,
-                      text: '${trip.departureLabel} - ${trip.endTimeLabel}',
+                      text: trip.timeRangeLabel,
                       flex: 5,
                     ),
                     const _VDivider(),
