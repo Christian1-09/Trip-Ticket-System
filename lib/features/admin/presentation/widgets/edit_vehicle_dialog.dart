@@ -1,6 +1,7 @@
 // features/admin/presentation/widgets/edit_vehicle_dialog.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/admin_colors.dart';
 import '../../data/models/vehicle_model.dart';
 import '../providers/vehicle_provider.dart';
 import 'driver_assignment_field.dart';
@@ -53,21 +54,21 @@ class _EditVehicleDialogState extends ConsumerState<EditVehicleDialog> {
   InputDecoration _fieldDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
+      hintStyle: const TextStyle(color: AdminColors.textMuted, fontSize: 12),
       filled: true,
-      fillColor: const Color(0xFF0D1442),
+      fillColor: const Color(0xFFF6F8FC),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+        borderSide: BorderSide(color: AdminColors.border),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+        borderSide: BorderSide(color: AdminColors.border),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF29B6F6)),
+        borderSide: const BorderSide(color: AdminColors.blue),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
@@ -82,10 +83,10 @@ class _EditVehicleDialogState extends ConsumerState<EditVehicleDialog> {
     child: RichText(
       text: TextSpan(
         style: const TextStyle(
-            color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
+            color: AdminColors.navy, fontSize: 11, fontWeight: FontWeight.w600),
         children: [
           TextSpan(text: text),
-          const TextSpan(text: ' *', style: TextStyle(color: Colors.amber)),
+          const TextSpan(text: ' *', style: TextStyle(color: AdminColors.amber)),
         ],
       ),
     ),
@@ -140,10 +141,11 @@ class _EditVehicleDialogState extends ConsumerState<EditVehicleDialog> {
     final isSaving = ref.watch(editVehicleControllerProvider) is EditVehicleLoading;
 
     return Dialog(
-      backgroundColor: const Color(0xFF141B4D),
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: Color(0xFF29B6F6), width: 1.5),
+
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 380),
@@ -158,12 +160,12 @@ class _EditVehicleDialogState extends ConsumerState<EditVehicleDialog> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.edit_rounded, color: Color(0xFF29B6F6), size: 20),
+                      const Icon(Icons.edit_rounded, color: AdminColors.blue, size: 20),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text('Edit ${widget.vehicle.plateNumber}',
                             style: const TextStyle(
-                                color: Colors.white,
+                                color: AdminColors.navy,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold)),
                       ),
@@ -171,13 +173,13 @@ class _EditVehicleDialogState extends ConsumerState<EditVehicleDialog> {
                   ),
                   const SizedBox(height: 4),
                   const Text('The vehicle photo cannot be changed here.',
-                      style: TextStyle(color: Colors.white38, fontSize: 11)),
+                      style: TextStyle(color: AdminColors.textMuted, fontSize: 11)),
                   const SizedBox(height: 18),
 
                   _label('VEHICLE NAME'),
                   TextFormField(
                     controller: _nameController,
-                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    style: const TextStyle(color: AdminColors.navy, fontSize: 13),
                     decoration: _fieldDecoration('Enter vehicle name'),
                     validator: _requiredValidator,
                   ),
@@ -193,7 +195,7 @@ class _EditVehicleDialogState extends ConsumerState<EditVehicleDialog> {
                             _label('DIESEL MODELS'),
                             TextFormField(
                               controller: _typeController,
-                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              style: const TextStyle(color: AdminColors.navy, fontSize: 13),
                               decoration: _fieldDecoration('Enter Diesel Models'),
                               validator: _requiredValidator,
                             ),
@@ -208,7 +210,7 @@ class _EditVehicleDialogState extends ConsumerState<EditVehicleDialog> {
                             _label('PLATE NO'),
                             TextFormField(
                               controller: _plateController,
-                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              style: const TextStyle(color: AdminColors.navy, fontSize: 13),
                               decoration: _fieldDecoration('Enter plate no'),
                               validator: _requiredValidator,
                             ),
@@ -230,7 +232,7 @@ class _EditVehicleDialogState extends ConsumerState<EditVehicleDialog> {
                             TextFormField(
                               controller: _capacityController,
                               keyboardType: TextInputType.number,
-                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              style: const TextStyle(color: AdminColors.navy, fontSize: 13),
                               decoration: _fieldDecoration('Enter capacity'),
                               validator: _numberValidator,
                             ),
@@ -246,7 +248,7 @@ class _EditVehicleDialogState extends ConsumerState<EditVehicleDialog> {
                             TextFormField(
                               controller: _odometerController,
                               keyboardType: TextInputType.number,
-                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              style: const TextStyle(color: AdminColors.navy, fontSize: 13),
                               decoration: _fieldDecoration('Enter odometer'),
                               validator: _numberValidator,
                             ),
@@ -268,7 +270,7 @@ class _EditVehicleDialogState extends ConsumerState<EditVehicleDialog> {
                             TextFormField(
                               controller: _yearController,
                               keyboardType: TextInputType.number,
-                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              style: const TextStyle(color: AdminColors.navy, fontSize: 13),
                               decoration: _fieldDecoration('Enter year'),
                               validator: _numberValidator,
                             ),
@@ -284,7 +286,7 @@ class _EditVehicleDialogState extends ConsumerState<EditVehicleDialog> {
                               padding: EdgeInsets.only(bottom: 6),
                               child: Text('Trips',
                                   style: TextStyle(
-                                      color: Colors.white70,
+                                      color: AdminColors.navy,
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600)),
                             ),
@@ -292,7 +294,7 @@ class _EditVehicleDialogState extends ConsumerState<EditVehicleDialog> {
                               enabled: false,
                               initialValue: '${widget.vehicle.trips}',
                               style: TextStyle(
-                                  color: Colors.white.withOpacity(0.4), fontSize: 13),
+                                  color: const Color(0xFFA0A8BC), fontSize: 13),
                               decoration: _fieldDecoration('0'),
                             ),
                           ],
@@ -314,7 +316,7 @@ class _EditVehicleDialogState extends ConsumerState<EditVehicleDialog> {
                       ElevatedButton(
                         onPressed: isSaving ? null : () => Navigator.of(context).pop(),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF37474F),
+                          backgroundColor: const Color(0xFFECEFF6),
                           padding:
                           const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
                           shape: RoundedRectangleBorder(
@@ -322,13 +324,13 @@ class _EditVehicleDialogState extends ConsumerState<EditVehicleDialog> {
                         ),
                         child: const Text('Cancel',
                             style: TextStyle(
-                                color: Colors.white, fontWeight: FontWeight.w600)),
+                                color: AdminColors.navy, fontWeight: FontWeight.w600)),
                       ),
                       const SizedBox(width: 10),
                       ElevatedButton(
                         onPressed: isSaving ? null : _handleSave,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber,
+                          backgroundColor: AdminColors.amber,
                           padding:
                           const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
                           shape: RoundedRectangleBorder(
@@ -339,11 +341,11 @@ class _EditVehicleDialogState extends ConsumerState<EditVehicleDialog> {
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Color(0xFF0A0F35)),
+                              strokeWidth: 2, color: AdminColors.navy),
                         )
                             : const Text('Save changes',
                             style: TextStyle(
-                                color: Color(0xFF0A0F35),
+                                color: AdminColors.navy,
                                 fontWeight: FontWeight.bold)),
                       ),
                     ],

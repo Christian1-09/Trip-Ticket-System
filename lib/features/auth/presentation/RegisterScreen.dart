@@ -15,6 +15,9 @@ enum UserRole {
   const UserRole(this.label);
 }
 
+/// Screens at least this wide (desktop app, web) show the side-by-side layout.
+const double _wideBreakpoint = 900;
+
 /// Colors used by the light auth design (same as LoginScreen).
 class _Palette {
   static const navy = Color(0xFF0B1E5B);
@@ -121,22 +124,81 @@ class _RegisterScreenState extends State<RegisterScreen> {
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
         backgroundColor: _Palette.pageBg,
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              const _Header(),
-              Transform.translate(
-                offset: const Offset(0, -28),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _buildCard(),
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
-          ),
+        body: LayoutBuilder(
+          builder: (context, constraints) =>
+          constraints.maxWidth >= _wideBreakpoint
+              ? _buildWide()
+              : _buildNarrow(),
         ),
       ),
+    );
+  }
+
+  /// Phone layout: photo header on top, card below (unchanged).
+  Widget _buildNarrow() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const _Header(),
+          Transform.translate(
+            offset: const Offset(0, -28),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _buildCard(),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+
+  /// Desktop / web layout: photo on the left, form on the right.
+  Widget _buildWide() {
+    return Row(
+      children: [
+        const Expanded(
+          flex: 11,
+          child: _SideHero(
+            title: 'Create Your Account',
+            subtitle:
+            'Join JTRIPS and start booking safe, comfortable, and reliable trips.',
+          ),
+        ),
+        Expanded(
+          flex: 9,
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 40),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'Register',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: _Palette.textDark,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Fill in your details to create an account.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: _Palette.textMuted, fontSize: 14),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildCard(),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -798,6 +860,139 @@ class _OrDivider extends StatelessWidget {
         ),
         line,
       ],
+    );
+  }
+}
+
+/// Left half of the screen on desktop / web: full-height photo with the
+/// logo, title and a few highlights.
+class _SideHero extends StatelessWidget {
+  final String title;
+  final String subtitle;
+
+  const _SideHero({required this.title, required this.subtitle});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.asset(
+          AppMedia.scheduleHeaderImage,
+          fit: BoxFit.cover,
+          alignment: const Alignment(0.4, 0),
+        ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                _Palette.navy.withOpacity(0.95),
+                _Palette.navy.withOpacity(0.65),
+                _Palette.navy.withOpacity(0.10),
+              ],
+              stops: const [0.0, 0.5, 1.0],
+            ),
+          ),
+        ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                _Palette.navy.withOpacity(0.55),
+              ],
+              stops: const [0.5, 1.0],
+            ),
+          ),
+        ),
+        CustomPaint(painter: _HeaderSwooshPainter()),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(56, 48, 56, 56),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _JtripsLogo(),
+              const Spacer(),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 42,
+                  fontWeight: FontWeight.w900,
+                  height: 1.1,
+                ),
+              ),
+              const SizedBox(height: 14),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 17,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              const _HeroPoint(
+                icon: Icons.touch_app_rounded,
+                text: 'Book a trip in a few steps',
+              ),
+              const _HeroPoint(
+                icon: Icons.track_changes_rounded,
+                text: 'Follow every approval as it happens',
+              ),
+              const _HeroPoint(
+                icon: Icons.verified_user_rounded,
+                text: 'Safe, comfortable and reliable trips',
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HeroPoint extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _HeroPoint({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: _Palette.yellow,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: _Palette.navy, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Flexible(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

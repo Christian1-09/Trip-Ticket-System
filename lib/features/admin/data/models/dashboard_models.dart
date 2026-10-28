@@ -5,14 +5,14 @@ import 'package:flutter/material.dart';
 /// bar chart, the doughnut and its legend. Colours come from the position
 /// in the list, which the backend sorts by trip count.
 const List<Color> kChartPalette = [
-  Color(0xFF29B6F6),
-  Color(0xFFAB47BC),
-  Color(0xFFF9A825),
-  Color(0xFF66BB6A),
-  Color(0xFFEF5350),
-  Color(0xFF26A69A),
-  Color(0xFF7E57C2),
-  Color(0xFFFF7043),
+  Color(0xFF2563EB), // blue
+  Color(0xFF60A5FA), // light blue
+  Color(0xFFFBBF24), // amber
+  Color(0xFF22C55E), // green
+  Color(0xFFA855F7), // purple
+  Color(0xFFEF4444), // red
+  Color(0xFF14B8A6), // teal
+  Color(0xFFF97316), // orange
 ];
 
 Color paletteColor(int index) => kChartPalette[index % kChartPalette.length];
@@ -129,21 +129,21 @@ class AdminDashboard {
       value: '$totalTrips',
       subtext: '$completedTrips completed · $rejectedTrips rejected',
       icon: Icons.route_rounded,
-      color: const Color(0xFF3B4EDB),
+      color: const Color(0xFF2563EB),
     ),
     AdminStatCardModel(
       label: 'In Progress',
       value: '$inProgress',
       subtext: '$ongoingNow on the road now',
-      icon: Icons.pending_actions_rounded,
-      color: const Color(0xFFF9A825),
+      icon: Icons.description_rounded,
+      color: const Color(0xFFF59E0B),
     ),
     AdminStatCardModel(
       label: 'Vehicles',
       value: '$activeVehicles',
       subtext: 'of $totalVehicles available',
       icon: Icons.directions_car_filled_rounded,
-      color: const Color(0xFF26A69A),
+      color: const Color(0xFF4F46E5),
     ),
     AdminStatCardModel(
       label: 'Drivers',
@@ -154,7 +154,7 @@ class AdminDashboard {
           ? 'No ratings yet'
           : '${averageRating!.toStringAsFixed(1)} average rating',
       icon: Icons.people_alt_rounded,
-      color: const Color(0xFF2E7D32),
+      color: const Color(0xFF16A34A),
     ),
   ];
 }
@@ -218,15 +218,17 @@ class StatusCountModel {
     'COMPLETED': 'Completed',
   };
 
+  // Matches the mockup: With Driver blue, Accepted light blue, Pending
+  // amber, Rejected red, Completed green.
   static const _colors = {
-    'PENDING': Color(0xFF64748B),
-    'ADMIN_APPROVED': Color(0xFF3B4EDB),
-    'HEAD_DRIVER_APPROVED': Color(0xFF5C6BC0),
-    'DRIVER_ACCEPTED': Color(0xFF00897B),
-    'DRIVER_DECLINED': Color(0xFFFF7043),
-    'REJECTED': Color(0xFFC62828),
-    'ONGOING': Color(0xFFF9A825),
-    'COMPLETED': Color(0xFF2E7D32),
+    'PENDING': Color(0xFFFBBF24),
+    'ADMIN_APPROVED': Color(0xFF6366F1),
+    'HEAD_DRIVER_APPROVED': Color(0xFF2563EB),
+    'DRIVER_ACCEPTED': Color(0xFF60A5FA),
+    'DRIVER_DECLINED': Color(0xFFF97316),
+    'REJECTED': Color(0xFFEF4444),
+    'ONGOING': Color(0xFF14B8A6),
+    'COMPLETED': Color(0xFF22C55E),
   };
 
   factory StatusCountModel.fromJson(Map<String, dynamic> json) {

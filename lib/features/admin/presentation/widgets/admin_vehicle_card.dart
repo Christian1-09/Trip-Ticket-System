@@ -1,9 +1,11 @@
 // features/admin/presentation/widgets/admin_vehicle_card.dart
 import 'package:flutter/material.dart';
 import 'package:jtrips_app/core/theme/config/api_config.dart';
+
+import '../../../../core/theme/admin_colors.dart';
 import '../../data/models/vehicle_model.dart';
 
-enum VehicleCardAction { edit, changeStatus, delete }
+enum VehicleCardAction { edit, changeStatus, delete, viewMap }
 
 class VehicleCard extends StatelessWidget {
   final VehicleModel vehicle;
@@ -24,13 +26,13 @@ class VehicleCard extends StatelessWidget {
   Color get _statusColor {
     switch (vehicle.status) {
       case VehicleStatus.active:
-        return const Color(0xFF2E7D32);
+        return const Color(0xFF22C55E);
       case VehicleStatus.onTrip:
-        return const Color(0xFFF9A825);
+        return const Color(0xFFF59E0B);
       case VehicleStatus.maintenance:
-        return const Color(0xFFC62828);
+        return const Color(0xFFEF4444);
       case VehicleStatus.inactive:
-        return const Color(0xFF64748B);
+        return const Color(0xFF94A3B8);
     }
   }
 
@@ -54,42 +56,43 @@ class VehicleCard extends StatelessWidget {
   /// While a vehicle is out on the road its status is owned by the system.
   bool get _canChangeStatus => vehicle.status != VehicleStatus.onTrip;
 
+  /// Only a vehicle out on the road has a position worth looking at.
+  bool get _isOnTrip => vehicle.status == VehicleStatus.onTrip;
+
   @override
   Widget build(BuildContext context) {
     final imageUrl = ApiConfig.mediaUrl(vehicle.imageUrl);
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF141B4D),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white12),
+        boxShadow: AdminColors.cardShadow,
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Photo ───────────────────────────────────────────────
           Stack(
             children: [
               Container(
-                height: 130,
+                height: 125,
                 width: double.infinity,
                 color: Colors.white,
+                padding: const EdgeInsets.fromLTRB(14, 14, 14, 6),
                 child: imageUrl != null
                     ? Image.network(
                   imageUrl,
                   fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const Center(
-                      child: Icon(Icons.directions_car,
-                          size: 48, color: Colors.black26)),
+                  errorBuilder: (_, __, ___) => const _NoPhoto(),
                 )
-                    : const Center(
-                    child: Icon(Icons.directions_car,
-                        size: 48, color: Colors.black26)),
+                    : const _NoPhoto(),
               ),
               if (onAction != null)
                 Positioned(
-                  top: 6,
-                  right: 6,
+                  top: 10,
+                  right: 10,
                   child: _ActionMenu(
                     enabled: !busy,
                     canDelete: _canDelete,
@@ -100,79 +103,117 @@ class VehicleCard extends StatelessWidget {
                 ),
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('PLATE: ${vehicle.plateNumber}',
-                    style: const TextStyle(
-                        color: Colors.white54,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600)),
-                const SizedBox(height: 2),
-                Text(vehicle.model,
-                    style: const TextStyle(
-                        color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-                Text(vehicle.type,
-                    style: const TextStyle(color: Colors.white54, fontSize: 11)),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(child: _statBox('CAPACITY', '${vehicle.capacity}pax')),
-                    const SizedBox(width: 8),
-                    Expanded(
-                        child: _statBox('ODOMETER', '${vehicle.odometerCurrent ?? 0} KM')),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(child: _statBox('YEAR', '${vehicle.year ?? '—'}')),
-                    const SizedBox(width: 8),
-                    Expanded(child: _statBox('TRIPS', '${vehicle.trips}')),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // Status and drivers share one row rather than stacking, so
-                // the card's height is unchanged — a taller card would
-                // overflow wherever this sits in a fixed-ratio grid.
-                Row(
-                  children: [
-                    Flexible(
-                      child: Container(
-                        padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                            color: _statusColor.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(6)),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                    color: _statusColor, shape: BoxShape.circle)),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(_statusLabel,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      color: _statusColor,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600)),
-                            ),
-                          ],
+
+          // ── Details panel ───────────────────────────────────────
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              margin: const EdgeInsets.fromLTRB(6, 0, 6, 6),
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF6F8FC),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('PLATE: ${vehicle.plateNumber}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: AdminColors.textMuted,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  Text(vehicle.model,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: AdminColors.navy,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800)),
+                  Text(vehicle.type,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: AdminColors.textMuted, fontSize: 12)),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(child: _statBox('CAPACITY', '${vehicle.capacity}pax')),
+                      const SizedBox(width: 6),
+                      Expanded(
+                          child: _statBox(
+                              'ODOMETER', '${vehicle.odometerCurrent ?? 0} KM')),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(child: _statBox('YEAR', '${vehicle.year ?? '—'}')),
+                      const SizedBox(width: 6),
+                      Expanded(child: _statBox('TRIPS', '${vehicle.trips}')),
+                    ],
+                  ),
+                  const Spacer(),
+                  Row(
+                    children: [
+                      Container(
+                        width: 9,
+                        height: 9,
+                        decoration:
+                        BoxDecoration(color: _statusColor, shape: BoxShape.circle),
+                      ),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(_statusLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: vehicle.status == VehicleStatus.maintenance
+                                    ? _statusColor
+                                    : vehicle.status == VehicleStatus.inactive
+                                    ? AdminColors.textMuted
+                                    : const Color(0xFF16A34A),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600)),
+                      ),
+                      const SizedBox(width: 10),
+                      _DriverStrip(drivers: vehicle.drivers),
+                    ],
+                  ),
+
+                  // ── Live map ──────────────────────────────────────
+                  // Only while the vehicle is out on the road. A parked
+                  // vehicle's last fix is days old and tells nobody
+                  // anything useful.
+                  if (_isOnTrip && onAction != null) ...[
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 36,
+                      child: ElevatedButton.icon(
+                        onPressed: busy
+                            ? null
+                            : () => onAction!(VehicleCardAction.viewMap),
+                        icon: const Icon(Icons.location_on_outlined, size: 16),
+                        label: const Text(
+                          'View on map',
+                          style: TextStyle(
+                              fontSize: 12.5, fontWeight: FontWeight.w700),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          backgroundColor: AdminColors.blue,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(9)),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    _DriverStrip(drivers: vehicle.drivers),
                   ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -182,32 +223,45 @@ class VehicleCard extends StatelessWidget {
 
   Widget _statBox(String label, String value) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 9),
       decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(8)),
+        color: const Color(0xFFECEFF6),
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: Colors.white38, fontSize: 9)),
-          Text(value,
+          Text(label,
               style: const TextStyle(
-                  color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                  color: AdminColors.textMuted,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600)),
+          const SizedBox(height: 2),
+          Text(value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  color: AdminColors.navy, fontSize: 13, fontWeight: FontWeight.w700)),
         ],
       ),
     );
   }
 }
 
-/// Overlapping avatars for the assigned drivers, primary first with an
+class _NoPhoto extends StatelessWidget {
+  const _NoPhoto();
+  @override
+  Widget build(BuildContext context) => const Center(
+    child: Icon(Icons.directions_car, size: 56, color: Color(0xFFCBD2E1)),
+  );
+}
+
+/// Overlapping initials for the assigned drivers, primary first with an
 /// amber ring. Shows at most three, then "+N".
-///
-/// Sized to the same height as the status chip so adding it costs no
-/// vertical space.
 class _DriverStrip extends StatelessWidget {
   final List<VehicleDriver> drivers;
   static const int _maxShown = 3;
-  static const double _size = 22;
+  static const double _size = 26;
 
   const _DriverStrip({required this.drivers});
 
@@ -220,12 +274,11 @@ class _DriverStrip extends StatelessWidget {
           width: _size,
           height: _size,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: const Color(0xFFECEFF6),
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white12),
+            border: Border.all(color: AdminColors.border),
           ),
-          child: const Icon(Icons.person_off_outlined,
-              size: 12, color: Colors.white24),
+          child: const Icon(Icons.construction, size: 14, color: Color(0xFF8A94AD)),
         ),
       );
     }
@@ -233,8 +286,7 @@ class _DriverStrip extends StatelessWidget {
     final shown = drivers.take(_maxShown).toList();
     final extra = drivers.length - shown.length;
 
-    // Each avatar after the first overlaps the one before it.
-    const overlap = 7.0;
+    const overlap = 6.0;
     final stripWidth =
         _size + (shown.length - 1) * (_size - overlap) + (extra > 0 ? _size - overlap : 0);
 
@@ -260,18 +312,13 @@ class _DriverStrip extends StatelessWidget {
                   height: _size,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E2761),
+                    color: AdminColors.navy,
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF141B4D), width: 1.5),
+                    border: Border.all(color: Colors.white, width: 1.5),
                   ),
-                  child: Text(
-                    '+$extra',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  child: Text('+$extra',
+                      style: const TextStyle(
+                          color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700)),
                 ),
               ),
           ],
@@ -288,33 +335,32 @@ class _Avatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final avatarUrl = ApiConfig.mediaUrl(driver.avatarUrl);
+    final primary = driver.isPrimary;
 
     return Container(
       width: _DriverStrip._size,
       height: _DriverStrip._size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        // The ring doubles as the separator between overlapping avatars,
-        // and goes amber for the primary driver.
+        color: primary ? Colors.white : AdminColors.blue,
+        // Primary: amber ring on white (like the mockup). Others: white ring
+        // that separates the overlapping blue circles.
         border: Border.all(
-          color: driver.isPrimary ? Colors.amber : const Color(0xFF141B4D),
-          width: 1.5,
+          color: primary ? AdminColors.amber : Colors.white,
+          width: primary ? 2 : 1.5,
         ),
-      ),
-      child: CircleAvatar(
-        backgroundColor: const Color(0xFF29B6F6).withOpacity(0.3),
-        backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
-        child: avatarUrl == null
-            ? Text(
-          driver.initials,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 8,
-            fontWeight: FontWeight.bold,
-          ),
-        )
+        image: avatarUrl != null
+            ? DecorationImage(image: NetworkImage(avatarUrl), fit: BoxFit.cover)
             : null,
       ),
+      alignment: Alignment.center,
+      child: avatarUrl == null
+          ? Text(driver.initials,
+          style: TextStyle(
+              color: primary ? AdminColors.navy : Colors.white,
+              fontSize: 9,
+              fontWeight: FontWeight.w800))
+          : null,
     );
   }
 }
@@ -336,16 +382,22 @@ class _ActionMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const enabledText = TextStyle(color: AdminColors.navy, fontSize: 13);
+    const disabledText = TextStyle(color: Color(0xFFA0A8BC), fontSize: 13);
+
     return Container(
+      width: 32,
+      height: 32,
       decoration: BoxDecoration(
-        color: const Color(0xFF0A0F35).withOpacity(0.75),
+        color: const Color(0xFFF1F4FA),
         borderRadius: BorderRadius.circular(8),
       ),
       child: PopupMenuButton<VehicleCardAction>(
         enabled: enabled,
         tooltip: 'Vehicle actions',
-        color: const Color(0xFF1E2761),
-        icon: const Icon(Icons.more_vert, color: Colors.white, size: 18),
+        color: Colors.white,
+        elevation: 6,
+        icon: const Icon(Icons.more_vert, color: AdminColors.navy, size: 18),
         padding: EdgeInsets.zero,
         splashRadius: 18,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -355,9 +407,9 @@ class _ActionMenu extends StatelessWidget {
             value: VehicleCardAction.edit,
             child: Row(
               children: [
-                Icon(Icons.edit_outlined, size: 16, color: Colors.white70),
+                Icon(Icons.edit_outlined, size: 16, color: AdminColors.navy),
                 SizedBox(width: 10),
-                Text('Edit details', style: TextStyle(color: Colors.white, fontSize: 13)),
+                Text('Edit details', style: enabledText),
               ],
             ),
           ),
@@ -368,14 +420,10 @@ class _ActionMenu extends StatelessWidget {
               children: [
                 Icon(Icons.swap_horiz_rounded,
                     size: 16,
-                    color: canChangeStatus ? Colors.white70 : Colors.white24),
+                    color: canChangeStatus ? AdminColors.navy : const Color(0xFFA0A8BC)),
                 const SizedBox(width: 10),
-                Text(
-                  canChangeStatus ? 'Change status' : 'On a trip — status locked',
-                  style: TextStyle(
-                      color: canChangeStatus ? Colors.white : Colors.white38,
-                      fontSize: 13),
-                ),
+                Text(canChangeStatus ? 'Change status' : 'On a trip — status locked',
+                    style: canChangeStatus ? enabledText : disabledText),
               ],
             ),
           ),
@@ -386,14 +434,15 @@ class _ActionMenu extends StatelessWidget {
             child: Row(
               children: [
                 Icon(Icons.delete_outline,
-                    size: 16, color: canDelete ? Colors.redAccent : Colors.white24),
+                    size: 16,
+                    color: canDelete ? const Color(0xFFE53935) : const Color(0xFFA0A8BC)),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     canDelete ? 'Delete' : 'Has $tripCount trip(s) — cannot delete',
-                    style: TextStyle(
-                        color: canDelete ? Colors.redAccent : Colors.white38,
-                        fontSize: 13),
+                    style: canDelete
+                        ? const TextStyle(color: Color(0xFFE53935), fontSize: 13)
+                        : disabledText,
                   ),
                 ),
               ],

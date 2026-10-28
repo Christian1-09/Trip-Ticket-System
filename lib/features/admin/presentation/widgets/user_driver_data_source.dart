@@ -31,18 +31,26 @@ class UserDriverDataSource extends DataGridSource {
 
   List<DataGridRow> _rows = [];
 
+  static const _textPrimary = Color(0xFF1F2937);
+  static const _navy = Color(0xFF1A237E);
+
   @override
   List<DataGridRow> get rows => _rows;
 
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
     return DataGridRowAdapter(
+      color: Colors.white,
       cells: row.getCells().map<Widget>((cell) {
         if (cell.columnName == 'status') {
           // Every row here is, by definition, pending — once approved or
           // rejected, the backend stops returning it in this list.
           return const Center(
-            child: _StatusBadge(label: 'Pending', color: Color(0xFFF9A825)),
+            child: _StatusPill(
+              label: 'Pending',
+              background: Color(0xFFFFF4DB),
+              foreground: Color(0xFFB7791F),
+            ),
           );
         }
 
@@ -52,24 +60,18 @@ class UserDriverDataSource extends DataGridSource {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextButton(
+                _ActionButton(
+                  label: 'Reject',
+                  background: const Color(0xFFEEF0F6),
+                  foreground: const Color(0xFFDC2626),
                   onPressed: () => onReject(user),
-                  style: TextButton.styleFrom(
-                    backgroundColor: const Color(0xFFC62828),
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: const Text('Reject', style: TextStyle(color: Colors.white, fontSize: 11)),
                 ),
-                const SizedBox(width: 6),
-                TextButton(
+                const SizedBox(width: 8),
+                _ActionButton(
+                  label: 'Approve',
+                  background: const Color(0xFF9C27F0),
+                  foreground: Colors.white,
                   onPressed: () => onApprove(user),
-                  style: TextButton.styleFrom(
-                    backgroundColor: const Color(0xFF2E7D32),
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: const Text('Approve', style: TextStyle(color: Colors.white, fontSize: 11)),
                 ),
               ],
             ),
@@ -80,7 +82,14 @@ class UserDriverDataSource extends DataGridSource {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Align(
             alignment: Alignment.centerLeft,
-            child: Text('${cell.value}', style: const TextStyle(color: Colors.white, fontSize: 12)),
+            child: Text(
+              '${cell.value}',
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: cell.columnName == 'name' ? _navy : _textPrimary,
+                fontSize: 13,
+              ),
+            ),
           ),
         );
       }).toList(),
@@ -88,21 +97,61 @@ class UserDriverDataSource extends DataGridSource {
   }
 }
 
-class _StatusBadge extends StatelessWidget {
+class _StatusPill extends StatelessWidget {
   final String label;
-  final Color color;
-  const _StatusBadge({required this.label, required this.color});
+  final Color background;
+  final Color foreground;
+  const _StatusPill({
+    required this.label,
+    required this.background,
+    required this.foreground,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.6)),
+        color: background,
+        borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(label, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
+      child: Text(
+        label,
+        style: TextStyle(color: foreground, fontSize: 11, fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  final String label;
+  final Color background;
+  final Color foreground;
+  final VoidCallback onPressed;
+  const _ActionButton({
+    required this.label,
+    required this.background,
+    required this.foreground,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 32,
+      child: TextButton(
+        onPressed: onPressed,
+        style: TextButton.styleFrom(
+          backgroundColor: background,
+          foregroundColor: foreground,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(color: foreground, fontSize: 12, fontWeight: FontWeight.w600),
+        ),
+      ),
     );
   }
 }

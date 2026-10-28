@@ -23,7 +23,7 @@ FutureProvider<List<AdminLocationModel>>((ref) {
   return ref.watch(adminLocationRepositoryProvider).listAll(status: status);
 });
 
-/// True while a save, toggle or delete is in flight, so the screen can dim
+/// True while a save, toggle or delete is running, so the screen can dim
 /// and the menus can disable.
 final locationBusyProvider = StateProvider<bool>((ref) => false);
 
@@ -61,17 +61,38 @@ class SaveLocationController extends StateNotifier<SaveLocationState> {
       : super(const SaveLocationIdle());
 
   /// [id] null creates, non-null edits.
+  ///
+  /// The coordinates are sent as a set: all three together, or all three
+  /// cleared. A half-set fence can't be evaluated, and the backend rejects
+  /// a latitude without a longitude anyway.
   Future<void> save({
     String? id,
     required String name,
     required int travelMinutes,
+    double? latitude,
+    double? longitude,
+    int? radiusMeters,
   }) async {
     state = const SaveLocationLoading();
     try {
       if (id == null) {
-        await _repository.create(name: name, travelMinutes: travelMinutes);
+        await _repository.create(
+          name: name,
+          travelMinutes: travelMinutes,
+          latitude: latitude,
+          longitude: longitude,
+          radiusMeters: radiusMeters,
+        );
       } else {
-        await _repository.update(id, name: name, travelMinutes: travelMinutes);
+        await _repository.update(
+          id,
+          name: name,
+          travelMinutes: travelMinutes,
+          // Passed explicitly — including null, which clears the fence.
+          latitude: latitude,
+          longitude: longitude,
+          radiusMeters: radiusMeters,
+        );
       }
       _ref.invalidate(adminLocationListProvider);
       state = const SaveLocationSuccess();
@@ -94,9 +115,6 @@ StateNotifierProvider<SaveLocationController, SaveLocationState>((ref) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /// Returns null on success, or the error message to show.
-///
-/// A plain return value rather than a state class: these actions have no UI
-/// of their own, so the caller just needs to know whether to show a snackbar.
 Future<String?> toggleLocationActive(
     WidgetRef ref,
     AdminLocationModel location,

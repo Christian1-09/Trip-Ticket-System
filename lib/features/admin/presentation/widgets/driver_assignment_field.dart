@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jtrips_app/core/theme/config/api_config.dart';
 
+import '../../../../core/theme/admin_colors.dart';
 import '../../data/models/vehicle_model.dart';
 import '../providers/vehicle_provider.dart';
 
@@ -89,7 +90,7 @@ class _DriverAssignmentFieldState extends ConsumerState<DriverAssignmentField> {
             const Text(
               'ASSIGNED DRIVERS',
               style: TextStyle(
-                color: Colors.white70,
+                color: AdminColors.navy,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
               ),
@@ -97,16 +98,16 @@ class _DriverAssignmentFieldState extends ConsumerState<DriverAssignmentField> {
             const Spacer(),
             Text(
               _selected.isEmpty ? 'Optional' : '${_selected.length} selected',
-              style: const TextStyle(color: Colors.white38, fontSize: 10),
+              style: const TextStyle(color: AdminColors.textMuted, fontSize: 10),
             ),
           ],
         ),
         const SizedBox(height: 6),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF0D1442),
+            color: const Color(0xFFF6F8FC),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
+            border: Border.all(color: AdminColors.border),
           ),
           child: driversAsync.when(
             loading: () => const Padding(
@@ -146,7 +147,7 @@ class _DriverAssignmentFieldState extends ConsumerState<DriverAssignmentField> {
                   child: Text(
                     'No approved drivers yet. Approve one in the Drivers '
                         'screen first.',
-                    style: TextStyle(color: Colors.white38, fontSize: 11),
+                    style: TextStyle(color: AdminColors.textMuted, fontSize: 11),
                   ),
                 );
               }
@@ -181,7 +182,7 @@ class _DriverAssignmentFieldState extends ConsumerState<DriverAssignmentField> {
         const Text(
           'Tap the star to mark the primary driver. This is for records only '
               '— any driver can still be booked on any vehicle.',
-          style: TextStyle(color: Colors.white38, fontSize: 10),
+          style: TextStyle(color: AdminColors.textMuted, fontSize: 10),
         ),
       ],
     );
@@ -218,22 +219,22 @@ class _DriverRow extends StatelessWidget {
               child: Checkbox(
                 value: isSelected,
                 onChanged: (_) => onToggle(),
-                activeColor: const Color(0xFF29B6F6),
-                side: BorderSide(color: Colors.white.withOpacity(0.4)),
+                activeColor: AdminColors.blue,
+                side: BorderSide(color: const Color(0xFFA0A8BC)),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 visualDensity: VisualDensity.compact,
               ),
             ),
             CircleAvatar(
               radius: 14,
-              backgroundColor: const Color(0xFF29B6F6).withOpacity(0.25),
+              backgroundColor: AdminColors.blue.withOpacity(0.25),
               backgroundImage:
               avatarUrl != null ? NetworkImage(avatarUrl) : null,
               child: avatarUrl == null
                   ? Text(
                 driver.initials,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AdminColors.navy,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                 ),
@@ -249,13 +250,13 @@ class _DriverRow extends StatelessWidget {
                     driver.fullName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                    style: const TextStyle(color: AdminColors.navy, fontSize: 12),
                   ),
                   if (driver.driverCode != null)
                     Text(
                       driver.driverCode!,
                       style: const TextStyle(
-                          color: Colors.white38, fontSize: 10),
+                          color: AdminColors.textMuted, fontSize: 10),
                     ),
                 ],
               ),
@@ -267,7 +268,7 @@ class _DriverRow extends StatelessWidget {
               icon: Icon(
                 isPrimary ? Icons.star_rounded : Icons.star_outline_rounded,
                 size: 18,
-                color: isPrimary ? Colors.amber : Colors.white24,
+                color: isPrimary ? AdminColors.amber : const Color(0xFFA0A8BC),
               ),
             ),
           ],

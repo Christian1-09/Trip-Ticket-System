@@ -3,11 +3,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:jtrips_app/core/theme/app_colors.dart';
 import 'package:jtrips_app/core/theme/network/api_exception.dart';
 
 import '../../data/driver_models.dart';
 import '../providers/driver_trip_providers.dart';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Light palette (same as TripInformation)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _C {
+  static const bg = Color(0xFFF2F5FB);
+  static const card = Colors.white;
+  static const headerTint = Color(0xFFF6F8FE);
+  static const primary = Color(0xFF2448B8);
+  static const primaryLight = Color(0xFFE8EEFF);
+  static const textDark = Color(0xFF111827);
+  static const textMuted = Color(0xFF6B7280);
+  static const border = Color(0xFFE5E9F2);
+  static const field = Color(0xFFF8FAFD);
+  static const yellow = Color(0xFFF5B400);
+  static const green = Color(0xFF16A34A);
+  static const greenDark = Color(0xFF2E7D32);
+  static const red = Color(0xFFDC2626);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared bits
@@ -19,46 +38,337 @@ final _decimal = FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'));
 double? _parseDouble(String text) => double.tryParse(text.trim());
 int? _parseInt(String text) => int.tryParse(text.trim());
 
-InputDecoration _decoration(String label, {String? suffix, String? helper}) {
+const _inputText = TextStyle(
+    color: _C.textDark, fontSize: 15, fontWeight: FontWeight.w600);
+
+InputDecoration _decoration(
+    String label, {
+      String? suffix,
+      String? helper,
+      IconData? icon,
+    }) {
+  OutlineInputBorder border(Color c, [double w = 1]) => OutlineInputBorder(
+    borderRadius: BorderRadius.circular(12),
+    borderSide: BorderSide(color: c, width: w),
+  );
+
   return InputDecoration(
     labelText: label,
     suffixText: suffix,
     helperText: helper,
     helperMaxLines: 2,
-    labelStyle: const TextStyle(color: AppColors.textSecondary),
-    helperStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
-    suffixStyle: const TextStyle(color: AppColors.textSecondary),
+    prefixIcon: icon == null ? null : Icon(icon, size: 20, color: _C.primary),
+    labelStyle: const TextStyle(color: _C.textMuted, fontSize: 14),
+    floatingLabelStyle: const TextStyle(color: _C.primary, fontWeight: FontWeight.w600),
+    helperStyle: const TextStyle(color: _C.textMuted, fontSize: 11.5),
+    suffixStyle: const TextStyle(color: _C.textMuted, fontWeight: FontWeight.w600),
     filled: true,
-    fillColor: AppColors.cardDeepBlue,
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: AppColors.statusBlue.withOpacity(0.4)),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: AppColors.accentYellow),
-    ),
+    fillColor: _C.field,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+    border: border(_C.border),
+    enabledBorder: border(_C.border),
+    focusedBorder: border(_C.primary, 1.5),
+    errorBorder: border(_C.red),
+    focusedErrorBorder: border(_C.red, 1.5),
   );
 }
 
-Widget _computedBox(String label, String value, {Color color = AppColors.accentYellow}) {
-  return Container(
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: color.withOpacity(0.12),
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: color.withOpacity(0.6)),
-    ),
-    child: Row(
-      children: [
-        Expanded(
-          child: Text(label,
-              style: const TextStyle(color: AppColors.textPrimary, fontSize: 13)),
+/// White card with a tinted header: [icon] Title  (optional subtitle)
+class _FormCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final Widget child;
+
+  const _FormCard({
+    required this.icon,
+    required this.title,
+    required this.child,
+    this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _C.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _C.border),
+        boxShadow: [
+          BoxShadow(
+            color: _C.primary.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            color: _C.headerTint,
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: _C.primaryLight,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, size: 16, color: _C.primary),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(title,
+                            style: const TextStyle(
+                                color: _C.textDark,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 3),
+                        Text(subtitle!,
+                            style: const TextStyle(color: _C.textMuted, fontSize: 12)),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, thickness: 1, color: _C.border),
+          Padding(padding: const EdgeInsets.all(14), child: child),
+        ],
+      ),
+    );
+  }
+}
+
+/// Small coloured tile showing a value worked out from the inputs.
+class _ComputedTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  const _ComputedTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.35)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 18, color: color),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: const TextStyle(
+                        color: _C.textMuted, fontSize: 11.5, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(value,
+                      style: const TextStyle(
+                          color: _C.textDark, fontSize: 17, fontWeight: FontWeight.w800)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Blue info line (icon + text).
+class _Note extends StatelessWidget {
+  final String text;
+  final IconData icon;
+  const _Note(this.text, {this.icon = Icons.info_outline_rounded});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: _C.primaryLight,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16, color: _C.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(text, style: const TextStyle(color: _C.primary, fontSize: 12.5)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Trip summary strip shown at the top of both forms.
+class _TripStrip extends StatelessWidget {
+  final DriverTrip item;
+  final List<(IconData, String)> facts;
+  const _TripStrip({required this.item, this.facts = const []});
+
+  @override
+  Widget build(BuildContext context) {
+    final trip = item.trip;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1E3A9E), Color(0xFF3461E0)],
         ),
-        Text(value,
-            style: TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.w800)),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.airport_shuttle_rounded, color: Colors.white, size: 24),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${trip.vehicleModel} · ${trip.vehiclePlate}',
+                    style: const TextStyle(
+                        color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 2),
+                Text(trip.ticketNumber,
+                    style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                if (facts.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final f in facts)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(f.$1, size: 12, color: Colors.white),
+                              const SizedBox(width: 4),
+                              Text(f.$2,
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+PreferredSizeWidget _appBar(String title) => AppBar(
+  backgroundColor: _C.card,
+  surfaceTintColor: Colors.transparent,
+  elevation: 0,
+  scrolledUnderElevation: 1,
+  shadowColor: Colors.black12,
+  iconTheme: const IconThemeData(color: _C.textDark),
+  titleSpacing: 0,
+  title: Text(title,
+      style: const TextStyle(
+          color: _C.textDark, fontSize: 18, fontWeight: FontWeight.w800)),
+);
+
+/// White bar pinned to the bottom holding the main button.
+Widget _bottomButton({
+  required String label,
+  required IconData icon,
+  required Color color,
+  required VoidCallback onPressed,
+}) {
+  return Container(
+    decoration: BoxDecoration(
+      color: _C.card,
+      border: const Border(top: BorderSide(color: _C.border)),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 10,
+          offset: const Offset(0, -2),
+        ),
       ],
+    ),
+    child: SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: onPressed,
+            icon: Icon(icon),
+            label: Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: color,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ),
+      ),
     ),
   );
 }
@@ -82,7 +392,7 @@ Future<bool> _submit(
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.message),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: _C.red,
           duration: const Duration(seconds: 6),
         ),
       );
@@ -93,7 +403,7 @@ Future<bool> _submit(
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Something went wrong. Please try again.'),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: _C.red,
         ),
       );
     }
@@ -168,38 +478,45 @@ class _DepartureLogScreenState extends ConsumerState<DepartureLogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final trip = widget.item.trip;
     final lastOdometer = widget.item.vehicleOdometer;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('Record Departure',
-            style: TextStyle(
-                color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w800)),
+      backgroundColor: _C.bg,
+      appBar: _appBar('Record Departure'),
+      bottomNavigationBar: _bottomButton(
+        label: 'Save & Depart',
+        icon: Icons.play_arrow_rounded,
+        color: _C.primary,
+        onPressed: _save,
       ),
-      body: SafeArea(
-        child: Form(
-          key: _formKey,
-          onChanged: () => setState(() {}), // keeps the total live
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Text('${trip.ticketNumber} • ${trip.vehiclePlate} ${trip.vehicleModel}',
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-              const SizedBox(height: 16),
-              TextFormField(
+      body: Form(
+        key: _formKey,
+        onChanged: () => setState(() {}), // keeps the total live
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+          children: [
+            _TripStrip(
+              item: widget.item,
+              facts: [
+                if (lastOdometer != null) (Icons.speed_rounded, 'Last $lastOdometer km'),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _FormCard(
+              icon: Icons.speed_rounded,
+              title: 'Odometer',
+              subtitle: 'As shown on the dashboard.',
+              child: TextFormField(
                 controller: _odometer,
                 keyboardType: TextInputType.number,
                 inputFormatters: [_intOnly],
-                style: const TextStyle(color: Colors.white),
+                style: _inputText,
                 decoration: _decoration(
                   'Odometer reading *',
                   suffix: 'km',
+                  icon: Icons.speed_rounded,
                   helper: lastOdometer == null
-                      ? 'As shown on the dashboard.'
+                      ? null
                       : 'Last recorded: $lastOdometer km. It cannot be lower.',
                 ),
                 validator: (v) {
@@ -212,60 +529,59 @@ class _DepartureLogScreenState extends ConsumerState<DepartureLogScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 20),
-              const Text('FUEL',
-                  style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.6)),
-              const SizedBox(height: 10),
-              TextFormField(
-                controller: _balance,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [_decimal],
-                style: const TextStyle(color: Colors.white),
-                decoration: _decoration('Already in the tank *', suffix: 'L'),
-                validator: _requiredNumber,
+            ),
+            const SizedBox(height: 12),
+            _FormCard(
+              icon: Icons.local_gas_station_rounded,
+              title: 'Fuel',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextFormField(
+                    controller: _balance,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [_decimal],
+                    style: _inputText,
+                    decoration: _decoration('Already in the tank *',
+                        suffix: 'L', icon: Icons.water_drop_outlined),
+                    validator: _requiredNumber,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _issued,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [_decimal],
+                    style: _inputText,
+                    decoration: _decoration('Issued by the office',
+                        suffix: 'L', icon: Icons.apartment_rounded),
+                    validator: _requiredNumber,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _purchased,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [_decimal],
+                    style: _inputText,
+                    decoration: _decoration('Purchased for this trip',
+                        suffix: 'L', icon: Icons.receipt_long_outlined),
+                    validator: _requiredNumber,
+                  ),
+                  const SizedBox(height: 14),
+                  _ComputedTile(
+                    icon: Icons.local_gas_station_rounded,
+                    label: 'Total fuel available',
+                    value: '${_total.toStringAsFixed(2)} L',
+                    color: _C.yellow,
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _issued,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [_decimal],
-                style: const TextStyle(color: Colors.white),
-                decoration: _decoration('Issued by the office', suffix: 'L'),
-                validator: _requiredNumber,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _purchased,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [_decimal],
-                style: const TextStyle(color: Colors.white),
-                decoration: _decoration('Purchased for this trip', suffix: 'L'),
-                validator: _requiredNumber,
-              ),
-              const SizedBox(height: 16),
-              _computedBox('Total fuel available', '${_total.toStringAsFixed(2)} L'),
-              const SizedBox(height: 8),
-              const Text(
-                'The departure time is recorded automatically when you save.',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _save,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.statusBlue,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('Save & Depart',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 12),
+            const _Note(
+              'The departure time is recorded automatically when you save.',
+              icon: Icons.schedule_rounded,
+            ),
+          ],
         ),
       ),
     );
@@ -317,9 +633,9 @@ class _ReturnLogScreenState extends ConsumerState<ReturnLogScreen> {
   /// and the pick-up. Same two fields, different wording.
   bool get _isWait => widget.item.trip.isWaitMode;
   String get _arrivedLabel =>
-      _isWait ? 'Time of arrival at destination *' : 'Time of drop-off at destination *';
+      _isWait ? 'Arrival at destination *' : 'Drop-off at destination *';
   String get _departedLabel =>
-      _isWait ? 'Time of departure from destination *' : 'Time of pick-up from destination *';
+      _isWait ? 'Departure from destination *' : 'Pick-up from destination *';
 
   /// Turns a picked clock time into a full DateTime on the trip's day.
   /// A time earlier than [notBefore] rolls to the next day ONLY when that
@@ -403,7 +719,7 @@ class _ReturnLogScreenState extends ConsumerState<ReturnLogScreen> {
     final timeError = _validateTimes();
     if (timeError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(timeError), backgroundColor: Colors.redAccent),
+        SnackBar(content: Text(timeError), backgroundColor: _C.red),
       );
       return;
     }
@@ -430,7 +746,6 @@ class _ReturnLogScreenState extends ConsumerState<ReturnLogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final trip = widget.item.trip;
     final dep = _departure;
 
     final end = _parseInt(_odometer.text);
@@ -439,205 +754,241 @@ class _ReturnLogScreenState extends ConsumerState<ReturnLogScreen> {
     final used = left == null ? null : dep.totalAvailableLiters - left;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('Record Return',
-            style: TextStyle(
-                color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w800)),
+      backgroundColor: _C.bg,
+      appBar: _appBar('Record Return'),
+      bottomNavigationBar: _bottomButton(
+        label: 'Save & Complete Trip',
+        icon: Icons.flag_rounded,
+        color: _C.greenDark,
+        onPressed: _save,
       ),
-      body: SafeArea(
-        child: Form(
-          key: _formKey,
-          onChanged: () => setState(() {}),
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Text('${trip.ticketNumber} • ${trip.vehiclePlate} ${trip.vehicleModel}',
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-              const SizedBox(height: 4),
-              Text(
-                'At departure: ${dep.odometerStart} km, '
-                    '${dep.totalAvailableLiters.toStringAsFixed(1)} L available',
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+      body: Form(
+        key: _formKey,
+        onChanged: () => setState(() {}),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+          children: [
+            _TripStrip(
+              item: widget.item,
+              facts: [
+                (Icons.logout_rounded,
+                'Left ${DateFormat('h:mm a').format(dep.departureTime)}'),
+                (Icons.speed_rounded, '${dep.odometerStart} km'),
+                (Icons.local_gas_station_rounded,
+                '${dep.totalAvailableLiters.toStringAsFixed(1)} L'),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _FormCard(
+              icon: Icons.schedule_rounded,
+              title: 'Times at the Destination',
+              subtitle: 'These two go on the printed trip ticket.',
+              child: Column(
+                children: [
+                  _TimePickerField(
+                    label: _arrivedLabel,
+                    icon: Icons.login_rounded,
+                    value: _arrivedAtDestination,
+                    onTap: _pickArrived,
+                  ),
+                  const SizedBox(height: 10),
+                  _TimePickerField(
+                    label: _departedLabel,
+                    icon: Icons.logout_rounded,
+                    value: _departedFromDestination,
+                    onTap: _pickDeparted,
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              const Text('TIMES AT THE DESTINATION',
-                  style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.6)),
-              const SizedBox(height: 4),
-              Text(
-                'These two go on the printed trip ticket. The trip left the garage at '
-                    '${DateFormat('h:mm a').format(_departure.departureTime)}.',
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+            ),
+            const SizedBox(height: 12),
+            _FormCard(
+              icon: Icons.speed_rounded,
+              title: 'Odometer & Fuel',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextFormField(
+                    controller: _odometer,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [_intOnly],
+                    style: _inputText,
+                    decoration: _decoration('Odometer reading now *',
+                        suffix: 'km', icon: Icons.speed_rounded),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'Required';
+                      final value = _parseInt(v);
+                      if (value == null) return 'Enter a whole number';
+                      if (value < dep.odometerStart) {
+                        return 'Cannot be lower than ${dep.odometerStart} km';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _balance,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [_decimal],
+                    style: _inputText,
+                    decoration: _decoration('Fuel left in the tank *',
+                        suffix: 'L', icon: Icons.water_drop_outlined),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'Required';
+                      final value = _parseDouble(v);
+                      if (value == null) return 'Enter a number';
+                      if (value > dep.totalAvailableLiters) {
+                        return 'Cannot be more than ${dep.totalAvailableLiters.toStringAsFixed(1)} L';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _ComputedTile(
+                          icon: Icons.route_rounded,
+                          label: 'Distance',
+                          value: distance == null || distance < 0 ? '—' : '$distance km',
+                          color: _C.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _ComputedTile(
+                          icon: Icons.local_gas_station_rounded,
+                          label: 'Fuel used',
+                          value: used == null || used < 0
+                              ? '—'
+                              : '${used.toStringAsFixed(2)} L',
+                          color: _C.yellow,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-              _TimePickerField(
-                label: _arrivedLabel,
-                value: _arrivedAtDestination,
-                onTap: _pickArrived,
+            ),
+            const SizedBox(height: 12),
+            _FormCard(
+              icon: Icons.oil_barrel_outlined,
+              title: 'Oils',
+              subtitle: 'Optional — leave blank if none were used.',
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _gearOil,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [_decimal],
+                    style: _inputText,
+                    decoration: _decoration('Gear oil used', suffix: 'L'),
+                    validator: _optionalNumber,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _lubricating,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [_decimal],
+                    style: _inputText,
+                    decoration: _decoration('Lubricating oil used', suffix: 'L'),
+                    validator: _optionalNumber,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _grease,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [_decimal],
+                    style: _inputText,
+                    decoration: _decoration('Grease issued', suffix: 'L'),
+                    validator: _optionalNumber,
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              _TimePickerField(
-                label: _departedLabel,
-                value: _departedFromDestination,
-                onTap: _pickDeparted,
-              ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _odometer,
-                keyboardType: TextInputType.number,
-                inputFormatters: [_intOnly],
-                style: const TextStyle(color: Colors.white),
-                decoration: _decoration('Odometer reading now *', suffix: 'km'),
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Required';
-                  final value = _parseInt(v);
-                  if (value == null) return 'Enter a whole number';
-                  if (value < dep.odometerStart) {
-                    return 'Cannot be lower than ${dep.odometerStart} km';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _balance,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [_decimal],
-                style: const TextStyle(color: Colors.white),
-                decoration: _decoration('Fuel left in the tank *', suffix: 'L'),
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Required';
-                  final value = _parseDouble(v);
-                  if (value == null) return 'Enter a number';
-                  if (value > dep.totalAvailableLiters) {
-                    return 'Cannot be more than ${dep.totalAvailableLiters.toStringAsFixed(1)} L';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              _computedBox(
-                'Distance traveled',
-                distance == null || distance < 0 ? '—' : '$distance km',
-                color: AppColors.statusBlue,
-              ),
-              const SizedBox(height: 8),
-              _computedBox(
-                'Fuel used',
-                used == null || used < 0 ? '—' : '${used.toStringAsFixed(2)} L',
-              ),
-              const SizedBox(height: 20),
-              const Text('OILS (optional)',
-                  style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.6)),
-              const SizedBox(height: 10),
-              TextFormField(
-                controller: _gearOil,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [_decimal],
-                style: const TextStyle(color: Colors.white),
-                decoration: _decoration('Gear oil used', suffix: 'L'),
-                validator: _optionalNumber,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _lubricating,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [_decimal],
-                style: const TextStyle(color: Colors.white),
-                decoration: _decoration('Lubricating oil used', suffix: 'L'),
-                validator: _optionalNumber,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _grease,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [_decimal],
-                style: const TextStyle(color: Colors.white),
-                decoration: _decoration('Grease issued', suffix: 'L'),
-                validator: _optionalNumber,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
+            ),
+            const SizedBox(height: 12),
+            _FormCard(
+              icon: Icons.edit_note_rounded,
+              title: 'Remarks',
+              child: TextFormField(
                 controller: _remarks,
                 maxLines: 3,
-                style: const TextStyle(color: Colors.white),
-                decoration: _decoration('Remarks'),
+                style: _inputText,
+                decoration: _decoration('Anything to report? (optional)'),
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _save,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2E7D32),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('Save & Complete Trip',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-
 /// Read-only field that opens a time picker — used for the two destination
 /// times on the return form.
 class _TimePickerField extends StatelessWidget {
   final String label;
+  final IconData icon;
   final DateTime? value;
   final VoidCallback onTap;
 
   const _TimePickerField({
     required this.label,
+    required this.icon,
     required this.value,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-        decoration: BoxDecoration(
-          color: AppColors.cardDeepBlue,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: value == null
-                ? AppColors.statusBlue.withOpacity(0.4)
-                : AppColors.accentYellow.withOpacity(0.8),
+    final set = value != null;
+    return Material(
+      color: set ? _C.primaryLight.withOpacity(0.5) : _C.field,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: set ? _C.primary : _C.border, width: set ? 1.3 : 1),
           ),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.access_time, color: AppColors.statusBlue, size: 18),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(label,
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-            ),
-            Text(
-              value == null ? 'Set time' : DateFormat('h:mm a').format(value!),
-              style: TextStyle(
-                color: value == null ? Colors.white38 : Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+          child: Row(
+            children: [
+              Icon(icon, color: _C.primary, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(label,
+                    style: const TextStyle(
+                        color: _C.textDark, fontSize: 13.5, fontWeight: FontWeight.w600)),
               ),
-            ),
-          ],
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: set ? _C.primary : _C.card,
+                  borderRadius: BorderRadius.circular(8),
+                  border: set ? null : Border.all(color: _C.border),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.access_time_rounded,
+                        size: 14, color: set ? Colors.white : _C.textMuted),
+                    const SizedBox(width: 4),
+                    Text(
+                      set ? DateFormat('h:mm a').format(value!) : 'Set time',
+                      style: TextStyle(
+                        color: set ? Colors.white : _C.textMuted,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

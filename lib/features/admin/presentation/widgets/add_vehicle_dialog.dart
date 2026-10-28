@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:jtrips_app/features/admin/data/models/vehicle_model.dart';
+import '../../../../core/theme/admin_colors.dart';
 import '../providers/vehicle_provider.dart';
 import 'driver_assignment_field.dart';
 
@@ -53,21 +54,21 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
   InputDecoration _fieldDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
+      hintStyle: const TextStyle(color: AdminColors.textMuted, fontSize: 12),
       filled: true,
-      fillColor: const Color(0xFF0D1442),
+      fillColor: const Color(0xFFF6F8FC),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+        borderSide: BorderSide(color: AdminColors.border),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+        borderSide: BorderSide(color: AdminColors.border),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF29B6F6)),
+        borderSide: const BorderSide(color: AdminColors.blue),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
@@ -81,10 +82,10 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
     padding: const EdgeInsets.only(bottom: 6),
     child: RichText(
       text: TextSpan(
-        style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
+        style: const TextStyle(color: AdminColors.navy, fontSize: 11, fontWeight: FontWeight.w600),
         children: [
           TextSpan(text: text),
-          const TextSpan(text: ' *', style: TextStyle(color: Colors.amber)),
+          const TextSpan(text: ' *', style: TextStyle(color: AdminColors.amber)),
         ],
       ),
     ),
@@ -133,10 +134,11 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
     final isSaving = ref.watch(addVehicleControllerProvider) is AddVehicleLoading;
 
     return Dialog(
-      backgroundColor: const Color(0xFF141B4D),
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: Color(0xFF29B6F6), width: 1.5),
+
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 380),
@@ -155,28 +157,28 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 24),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0D1442),
+                        color: const Color(0xFFF6F8FC),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFF29B6F6).withOpacity(0.5),
+                          color: AdminColors.blue.withOpacity(0.5),
                           width: 1.2,
                         ),
                       ),
                       child: Column(
                         children: [
-                          const Icon(Icons.cloud_upload_outlined, color: Color(0xFF29B6F6), size: 36),
+                          const Icon(Icons.cloud_upload_outlined, color: AdminColors.blue, size: 36),
                           const SizedBox(height: 8),
                           Text(
                             _pickedFile?.name ?? 'Upload File',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                            style: const TextStyle(color: AdminColors.navy, fontWeight: FontWeight.w600, fontSize: 14),
                             textAlign: TextAlign.center,
                           ),
                           if (_pickedFile == null) ...[
                             const SizedBox(height: 2),
                             const Text('Drag & drop your file here, or',
-                                style: TextStyle(color: Colors.white38, fontSize: 11)),
+                                style: TextStyle(color: AdminColors.textMuted, fontSize: 11)),
                             const Text('click to browse',
-                                style: TextStyle(color: Color(0xFF29B6F6), fontSize: 11, fontWeight: FontWeight.w600)),
+                                style: TextStyle(color: AdminColors.blue, fontSize: 11, fontWeight: FontWeight.w600)),
                           ],
                           const SizedBox(height: 12),
                           Wrap(
@@ -184,9 +186,9 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
                             alignment: WrapAlignment.center,
                             children: ['PDF', '.JPG', '.PNG', '.DOCX']
                                 .map((e) => Chip(
-                              label: Text(e, style: const TextStyle(fontSize: 9, color: Colors.white54)),
-                              backgroundColor: const Color(0xFF1E2761),
-                              side: BorderSide(color: Colors.white.withOpacity(0.15)),
+                              label: Text(e, style: const TextStyle(fontSize: 9, color: AdminColors.textMuted)),
+                              backgroundColor: const Color(0xFFECEFF6),
+                              side: BorderSide(color: AdminColors.border),
                               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ))
                                 .toList(),
@@ -200,7 +202,7 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
                   _label('VEHICLE NAME'),
                   TextFormField(
                     controller: _nameController,
-                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    style: const TextStyle(color: AdminColors.navy, fontSize: 13),
                     decoration: _fieldDecoration('Enter vehicle name'),
                     validator: _requiredValidator,
                   ),
@@ -216,7 +218,7 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
                             _label('DIESEL MODELS'),
                             TextFormField(
                               controller: _dieselModelsController,
-                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              style: const TextStyle(color: AdminColors.navy, fontSize: 13),
                               decoration: _fieldDecoration('Enter Diesel Models'),
                               validator: _requiredValidator,
                             ),
@@ -231,7 +233,7 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
                             _label('PLATE NO'),
                             TextFormField(
                               controller: _plateController,
-                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              style: const TextStyle(color: AdminColors.navy, fontSize: 13),
                               decoration: _fieldDecoration('Enter plate no'),
                               validator: _requiredValidator,
                             ),
@@ -253,7 +255,7 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
                             TextFormField(
                               controller: _capacityController,
                               keyboardType: TextInputType.number,
-                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              style: const TextStyle(color: AdminColors.navy, fontSize: 13),
                               decoration: _fieldDecoration('Enter capacity'),
                               validator: _numberValidator,
                             ),
@@ -269,7 +271,7 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
                             TextFormField(
                               controller: _odometerController,
                               keyboardType: TextInputType.number,
-                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              style: const TextStyle(color: AdminColors.navy, fontSize: 13),
                               decoration: _fieldDecoration('Enter odometer'),
                               validator: _numberValidator,
                             ),
@@ -291,7 +293,7 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
                             TextFormField(
                               controller: _yearController,
                               keyboardType: TextInputType.number,
-                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              style: const TextStyle(color: AdminColors.navy, fontSize: 13),
                               decoration: _fieldDecoration('Enter year'),
                               validator: _numberValidator,
                             ),
@@ -306,12 +308,12 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
                             const Padding(
                               padding: EdgeInsets.only(bottom: 6),
                               child: Text('Trips',
-                                  style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600)),
+                                  style: TextStyle(color: AdminColors.navy, fontSize: 11, fontWeight: FontWeight.w600)),
                             ),
                             TextFormField(
                               enabled: false,
                               initialValue: '0',
-                              style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13),
+                              style: TextStyle(color: const Color(0xFFA0A8BC), fontSize: 13),
                               decoration: _fieldDecoration('0'),
                             ),
                           ],
@@ -332,17 +334,17 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
                       ElevatedButton(
                         onPressed: isSaving ? null : () => Navigator.of(context).pop(),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF37474F),
+                          backgroundColor: const Color(0xFFECEFF6),
                           padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        child: const Text('Cancel', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                        child: const Text('Cancel', style: TextStyle(color: AdminColors.navy, fontWeight: FontWeight.w600)),
                       ),
                       const SizedBox(width: 10),
                       ElevatedButton(
                         onPressed: isSaving ? null : _handleConfirm,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber,
+                          backgroundColor: AdminColors.amber,
                           padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
@@ -350,10 +352,10 @@ class _AddVehicleDialogState extends ConsumerState<AddVehicleDialog> {
                             ? const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0A0F35)),
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AdminColors.navy),
                         )
                             : const Text('Confirm',
-                            style: TextStyle(color: Color(0xFF0A0F35), fontWeight: FontWeight.bold)),
+                            style: TextStyle(color: AdminColors.navy, fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),

@@ -2,14 +2,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/models/location_model.dart';
-import '../providers/location_provider.dart';
-import '../widgets/location_dialog.dart';
+import '../../../../../core/theme/admin_colors.dart';
+import '../../../data/models/location_model.dart';
+import '../../providers/location_provider.dart';
+import '../../widgets/location_dialog.dart';
 
 enum _LocationAction { edit, toggleActive, delete }
 
-class LocationsScreen extends ConsumerWidget {
-  const LocationsScreen({super.key});
+class LocationsTab extends ConsumerWidget {
+  const LocationsTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -18,96 +19,92 @@ class LocationsScreen extends ConsumerWidget {
     final busy = ref.watch(locationBusyProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0F35),
+      backgroundColor: AdminColors.background,
       body: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ── Header ───────────────────────────────────────
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Destinations',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 4),
+                          Text('Destinations',
+                              style: TextStyle(
+                                  color: AdminColors.navy,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w800)),
+                          SizedBox(height: 2),
                           Text(
                             'Places requesters can pick when booking, with '
                                 'the driving time from Katipunan.',
-                            style:
-                            TextStyle(color: Colors.white54, fontSize: 12),
+                            style: TextStyle(color: AdminColors.textMuted, fontSize: 14),
                           ),
                         ],
                       ),
                     ),
-                    ElevatedButton.icon(
-                      onPressed: busy
-                          ? null
-                          : () => showDialog(
-                        context: context,
-                        builder: (_) => const LocationDialog(),
-                      ),
-                      icon: const Icon(Icons.add,
-                          size: 18, color: Color(0xFF0A0F35)),
-                      label: const Text(
-                        'Add destination',
-                        style: TextStyle(
-                          color: Color(0xFF0A0F35),
-                          fontWeight: FontWeight.bold,
+                    SizedBox(
+                      height: 46,
+                      child: ElevatedButton.icon(
+                        onPressed: busy
+                            ? null
+                            : () => showDialog(
+                          context: context,
+                          builder: (_) => const LocationDialog(),
                         ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 18, vertical: 14),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                        icon: const Icon(Icons.add, size: 22),
+                        label: const Text('Add destination',
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          backgroundColor: AdminColors.amber,
+                          foregroundColor: AdminColors.navy,
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 18),
+
+                // ── Filter chips ─────────────────────────────────
                 Row(
                   children: [
                     _FilterChip(
                       label: 'All',
                       selected: filter == '',
-                      onTap: () =>
-                      ref.read(locationFilterProvider.notifier).state = '',
+                      onTap: () => ref.read(locationFilterProvider.notifier).state = '',
                     ),
                     const SizedBox(width: 8),
                     _FilterChip(
                       label: 'Active',
                       selected: filter == 'active',
-                      onTap: () => ref
-                          .read(locationFilterProvider.notifier)
-                          .state = 'active',
+                      onTap: () =>
+                      ref.read(locationFilterProvider.notifier).state = 'active',
                     ),
                     const SizedBox(width: 8),
                     _FilterChip(
                       label: 'Inactive',
                       selected: filter == 'inactive',
-                      onTap: () => ref
-                          .read(locationFilterProvider.notifier)
-                          .state = 'inactive',
+                      onTap: () =>
+                      ref.read(locationFilterProvider.notifier).state = 'inactive',
                     ),
                   ],
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 20),
+
+                // ── List ─────────────────────────────────────────
                 Expanded(
                   child: locationsAsync.when(
-                    loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                    loading: () => const Center(child: CircularProgressIndicator()),
                     error: (err, _) => _ErrorView(
                       detail: '$err',
                       onRetry: () => ref.invalidate(adminLocationListProvider),
@@ -116,17 +113,14 @@ class LocationsScreen extends ConsumerWidget {
                       if (locations.isEmpty) return _EmptyView(filter: filter);
 
                       return ListView.separated(
+                        padding: const EdgeInsets.only(bottom: 8),
                         itemCount: locations.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 10),
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (context, index) => _LocationRow(
                           location: locations[index],
                           busy: busy,
-                          onAction: (action) => _handleAction(
-                            context,
-                            ref,
-                            locations[index],
-                            action,
-                          ),
+                          onAction: (action) =>
+                              _handleAction(context, ref, locations[index], action),
                         ),
                       );
                     },
@@ -138,7 +132,7 @@ class LocationsScreen extends ConsumerWidget {
           if (busy)
             const Positioned.fill(
               child: ColoredBox(
-                color: Colors.black38,
+                color: Colors.black12,
                 child: Center(child: CircularProgressIndicator()),
               ),
             ),
@@ -184,28 +178,35 @@ class LocationsScreen extends ConsumerWidget {
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            backgroundColor: const Color(0xFF141B4D),
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            backgroundColor: Colors.white,
+            surfaceTintColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: Text(
               'Delete ${location.name}?',
-              style: const TextStyle(color: Colors.white, fontSize: 17),
+              style: const TextStyle(
+                  color: AdminColors.navy, fontSize: 18, fontWeight: FontWeight.w800),
             ),
             content: const Text(
               'This cannot be undone. Deactivating instead keeps it out of '
                   'the requester\'s list without losing the record.',
-              style: TextStyle(color: Colors.white70, fontSize: 13),
+              style: TextStyle(color: AdminColors.textMuted, fontSize: 13.5),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
                 child: const Text('Cancel',
-                    style: TextStyle(color: Colors.white70)),
+                    style: TextStyle(color: AdminColors.textMuted)),
               ),
-              TextButton(
+              ElevatedButton(
                 onPressed: () => Navigator.of(dialogContext).pop(true),
-                child: const Text('Delete',
-                    style: TextStyle(color: Colors.redAccent)),
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  backgroundColor: const Color(0xFFE53935),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text('Delete'),
               ),
             ],
           ),
@@ -230,107 +231,112 @@ class _LocationRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor =
-    location.isActive ? const Color(0xFF2E7D32) : const Color(0xFF64748B);
+    final active = location.isActive;
+    final pillBg = active ? const Color(0xFFE6F7EC) : const Color(0xFFECEFF5);
+    final pillFg = active ? const Color(0xFF16A34A) : AdminColors.textMuted;
+
+    const menuText = TextStyle(color: AdminColors.navy, fontSize: 13);
+    const disabledText = TextStyle(color: Color(0xFFA0A8BC), fontSize: 13);
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFF141B4D),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: AdminColors.cardShadow,
       ),
       child: Row(
         children: [
+          // Pin icon in a soft blue square
           Container(
-            width: 38,
-            height: 38,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFF29B6F6).withOpacity(0.15),
-              borderRadius: BorderRadius.circular(10),
+              color: const Color(0xFFEFF4FF),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.location_on_outlined,
-                color: Color(0xFF29B6F6), size: 19),
+                color: AdminColors.blue, size: 24),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 22),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  location.name,
+                  location.name.toUpperCase(),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                    color: AdminColors.navy,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: 3),
-                Text(
-                  location.usageLabel,
-                  style: const TextStyle(color: Colors.white38, fontSize: 11),
-                ),
+                Text(location.usageLabel,
+                    style: const TextStyle(color: AdminColors.textMuted, fontSize: 13.5)),
               ],
             ),
           ),
+
+          // Travel-time chip
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.06),
-              borderRadius: BorderRadius.circular(8),
+              color: const Color(0xFFF1F4FA),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.schedule,
-                    size: 13, color: Color(0xFF29B6F6)),
-                const SizedBox(width: 5),
+                const Icon(Icons.schedule, size: 17, color: AdminColors.blue),
+                const SizedBox(width: 8),
                 Text(
                   location.travelLabel,
                   style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                    color: AdminColors.navy,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
+
+          // Active / Inactive pill
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+            width: 72,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: activeColor.withOpacity(0.18),
-              borderRadius: BorderRadius.circular(20),
+              color: pillBg,
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              location.isActive ? 'Active' : 'Hidden',
-              style: TextStyle(
-                color: activeColor,
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-              ),
+              active ? 'Active' : 'Inactive',
+              style: TextStyle(color: pillFg, fontSize: 13.5, fontWeight: FontWeight.w600),
             ),
           ),
+          const SizedBox(width: 6),
+
           PopupMenuButton<_LocationAction>(
             enabled: !busy,
             tooltip: 'Destination actions',
-            color: const Color(0xFF1E2761),
-            icon: const Icon(Icons.more_vert, color: Colors.white54, size: 18),
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            color: Colors.white,
+            elevation: 6,
+            icon: const Icon(Icons.more_vert, color: AdminColors.navy, size: 22),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             onSelected: onAction,
             itemBuilder: (context) => [
               const PopupMenuItem(
                 value: _LocationAction.edit,
                 child: Row(
                   children: [
-                    Icon(Icons.edit_outlined, size: 16, color: Colors.white70),
+                    Icon(Icons.edit_outlined, size: 16, color: AdminColors.navy),
                     SizedBox(width: 10),
-                    Text('Edit',
-                        style: TextStyle(color: Colors.white, fontSize: 13)),
+                    Text('Edit', style: menuText),
                   ],
                 ),
               ),
@@ -339,20 +345,13 @@ class _LocationRow extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(
-                      location.isActive
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
+                      active ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                       size: 16,
-                      color: Colors.white70,
+                      color: AdminColors.navy,
                     ),
                     const SizedBox(width: 10),
-                    Text(
-                      location.isActive
-                          ? 'Hide from requesters'
-                          : 'Make available',
-                      style:
-                      const TextStyle(color: Colors.white, fontSize: 13),
-                    ),
+                    Text(active ? 'Hide from requesters' : 'Make available',
+                        style: menuText),
                   ],
                 ),
               ),
@@ -367,20 +366,15 @@ class _LocationRow extends StatelessWidget {
                     Icon(Icons.delete_outline,
                         size: 16,
                         color: location.canDelete
-                            ? Colors.redAccent
-                            : Colors.white24),
+                            ? const Color(0xFFE53935)
+                            : const Color(0xFFA0A8BC)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        location.canDelete
-                            ? 'Delete'
-                            : 'In use — hide it instead',
-                        style: TextStyle(
-                          color: location.canDelete
-                              ? Colors.redAccent
-                              : Colors.white38,
-                          fontSize: 13,
-                        ),
+                        location.canDelete ? 'Delete' : 'In use — hide it instead',
+                        style: location.canDelete
+                            ? const TextStyle(color: Color(0xFFE53935), fontSize: 13)
+                            : disabledText,
                       ),
                     ),
                   ],
@@ -407,25 +401,30 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected
-              ? const Color(0xFF29B6F6).withOpacity(0.2)
-              : Colors.white.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected ? const Color(0xFF29B6F6) : Colors.white12,
+    return Material(
+      color: selected ? const Color(0xFFE3EDFF) : Colors.white,
+      borderRadius: BorderRadius.circular(22),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minWidth: 72),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: selected ? AdminColors.blue : AdminColors.border,
+              width: selected ? 1.5 : 1,
+            ),
           ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: selected ? const Color(0xFF29B6F6) : Colors.white54,
-            fontSize: 12,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected ? AdminColors.blue : AdminColors.navy,
+              fontSize: 13.5,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            ),
           ),
         ),
       ),
@@ -449,17 +448,17 @@ class _EmptyView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.location_off_outlined,
-              color: Colors.white24, size: 40),
+          const Icon(Icons.location_off_outlined, color: Color(0xFFB7BECF), size: 44),
           const SizedBox(height: 12),
           Text(message,
-              style: const TextStyle(color: Colors.white54, fontSize: 14)),
+              style: const TextStyle(
+                  color: AdminColors.navy, fontSize: 15, fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           const Text(
             'Until one is added, requesters use the "Other" option and\n'
                 'estimate the travel time themselves.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white38, fontSize: 11, height: 1.5),
+            style: TextStyle(color: AdminColors.textMuted, fontSize: 12.5, height: 1.5),
           ),
         ],
       ),
@@ -482,14 +481,15 @@ class _ErrorView extends StatelessWidget {
           const Icon(Icons.error_outline, color: Colors.redAccent, size: 34),
           const SizedBox(height: 10),
           const Text('Could not load destinations',
-              style: TextStyle(color: Colors.white, fontSize: 14)),
+              style: TextStyle(
+                  color: AdminColors.navy, fontSize: 15, fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           Text(
             detail,
             textAlign: TextAlign.center,
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.white38, fontSize: 11),
+            style: const TextStyle(color: AdminColors.textMuted, fontSize: 12),
           ),
           TextButton(onPressed: onRetry, child: const Text('Retry')),
         ],
