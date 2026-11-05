@@ -15,7 +15,7 @@ import '../providers/tracking_provider.dart';
 /// Deliberately a single host rather than the `{s}` subdomain template:
 /// flutter_map has been deprecating `subdomains`, and one host is one less
 /// thing to break on a version bump.
-const _tileUrl = 'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png';
+const _tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 
 /// Live position of one vehicle, with the route it has driven on this trip.
 ///

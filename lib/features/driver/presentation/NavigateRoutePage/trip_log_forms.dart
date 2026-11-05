@@ -5,28 +5,13 @@ import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jtrips_app/core/theme/network/api_exception.dart';
 
+import '../../../../core/theme/driver_colors.dart';
 import '../../data/driver_models.dart';
 import '../providers/driver_trip_providers.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Light palette (same as TripInformation)
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _C {
-  static const bg = Color(0xFFF2F5FB);
-  static const card = Colors.white;
-  static const headerTint = Color(0xFFF6F8FE);
-  static const primary = Color(0xFF2448B8);
-  static const primaryLight = Color(0xFFE8EEFF);
-  static const textDark = Color(0xFF111827);
-  static const textMuted = Color(0xFF6B7280);
-  static const border = Color(0xFFE5E9F2);
-  static const field = Color(0xFFF8FAFD);
-  static const yellow = Color(0xFFF5B400);
-  static const green = Color(0xFF16A34A);
-  static const greenDark = Color(0xFF2E7D32);
-  static const red = Color(0xFFDC2626);
-}
+// ────────────────────────────────────────────────────────────────────────────
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared bits
@@ -39,7 +24,7 @@ double? _parseDouble(String text) => double.tryParse(text.trim());
 int? _parseInt(String text) => int.tryParse(text.trim());
 
 const _inputText = TextStyle(
-    color: _C.textDark, fontSize: 15, fontWeight: FontWeight.w600);
+    color: DriverColors.textDark, fontSize: 15, fontWeight: FontWeight.w600);
 
 InputDecoration _decoration(
     String label, {
@@ -57,19 +42,19 @@ InputDecoration _decoration(
     suffixText: suffix,
     helperText: helper,
     helperMaxLines: 2,
-    prefixIcon: icon == null ? null : Icon(icon, size: 20, color: _C.primary),
-    labelStyle: const TextStyle(color: _C.textMuted, fontSize: 14),
-    floatingLabelStyle: const TextStyle(color: _C.primary, fontWeight: FontWeight.w600),
-    helperStyle: const TextStyle(color: _C.textMuted, fontSize: 11.5),
-    suffixStyle: const TextStyle(color: _C.textMuted, fontWeight: FontWeight.w600),
+    prefixIcon: icon == null ? null : Icon(icon, size: 20, color: DriverColors.primary),
+    labelStyle: const TextStyle(color: DriverColors.textMuted, fontSize: 14),
+    floatingLabelStyle: const TextStyle(color: DriverColors.primary, fontWeight: FontWeight.w600),
+    helperStyle: const TextStyle(color: DriverColors.textMuted, fontSize: 11.5),
+    suffixStyle: const TextStyle(color: DriverColors.textMuted, fontWeight: FontWeight.w600),
     filled: true,
-    fillColor: _C.field,
+    fillColor: DriverColors.field,
     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-    border: border(_C.border),
-    enabledBorder: border(_C.border),
-    focusedBorder: border(_C.primary, 1.5),
-    errorBorder: border(_C.red),
-    focusedErrorBorder: border(_C.red, 1.5),
+    border: border(DriverColors.border),
+    enabledBorder: border(DriverColors.border),
+    focusedBorder: border(DriverColors.primary, 1.5),
+    errorBorder: border(DriverColors.red),
+    focusedErrorBorder: border(DriverColors.red, 1.5),
   );
 }
 
@@ -91,12 +76,12 @@ class _FormCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: _C.card,
+        color: DriverColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _C.border),
+        border: Border.all(color: DriverColors.border),
         boxShadow: [
           BoxShadow(
-            color: _C.primary.withOpacity(0.05),
+            color: DriverColors.primary.withOpacity(0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -107,7 +92,7 @@ class _FormCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            color: _C.headerTint,
+            color: DriverColors.headerTint,
             padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,10 +101,10 @@ class _FormCard extends StatelessWidget {
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(
-                    color: _C.primaryLight,
+                    color: DriverColors.primaryLight,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(icon, size: 16, color: _C.primary),
+                  child: Icon(icon, size: 16, color: DriverColors.primary),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -130,14 +115,14 @@ class _FormCard extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(title,
                             style: const TextStyle(
-                                color: _C.textDark,
+                                color: DriverColors.textDark,
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700)),
                       ),
                       if (subtitle != null) ...[
                         const SizedBox(height: 3),
                         Text(subtitle!,
-                            style: const TextStyle(color: _C.textMuted, fontSize: 12)),
+                            style: const TextStyle(color: DriverColors.textMuted, fontSize: 12)),
                       ],
                     ],
                   ),
@@ -145,7 +130,7 @@ class _FormCard extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(height: 1, thickness: 1, color: _C.border),
+          const Divider(height: 1, thickness: 1, color: DriverColors.border),
           Padding(padding: const EdgeInsets.all(14), child: child),
         ],
       ),
@@ -194,14 +179,14 @@ class _ComputedTile extends StatelessWidget {
               children: [
                 Text(label,
                     style: const TextStyle(
-                        color: _C.textMuted, fontSize: 11.5, fontWeight: FontWeight.w600)),
+                        color: DriverColors.textMuted, fontSize: 11.5, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: Text(value,
                       style: const TextStyle(
-                          color: _C.textDark, fontSize: 17, fontWeight: FontWeight.w800)),
+                          color: DriverColors.textDark, fontSize: 17, fontWeight: FontWeight.w800)),
                 ),
               ],
             ),
@@ -223,16 +208,16 @@ class _Note extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: _C.primaryLight,
+        color: DriverColors.primaryLight,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: _C.primary),
+          Icon(icon, size: 16, color: DriverColors.primary),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(text, style: const TextStyle(color: _C.primary, fontSize: 12.5)),
+            child: Text(text, style: const TextStyle(color: DriverColors.primary, fontSize: 12.5)),
           ),
         ],
       ),
@@ -318,16 +303,16 @@ class _TripStrip extends StatelessWidget {
 }
 
 PreferredSizeWidget _appBar(String title) => AppBar(
-  backgroundColor: _C.card,
+  backgroundColor: DriverColors.card,
   surfaceTintColor: Colors.transparent,
   elevation: 0,
   scrolledUnderElevation: 1,
   shadowColor: Colors.black12,
-  iconTheme: const IconThemeData(color: _C.textDark),
+  iconTheme: const IconThemeData(color: DriverColors.textDark),
   titleSpacing: 0,
   title: Text(title,
       style: const TextStyle(
-          color: _C.textDark, fontSize: 18, fontWeight: FontWeight.w800)),
+          color: DriverColors.textDark, fontSize: 18, fontWeight: FontWeight.w800)),
 );
 
 /// White bar pinned to the bottom holding the main button.
@@ -339,8 +324,8 @@ Widget _bottomButton({
 }) {
   return Container(
     decoration: BoxDecoration(
-      color: _C.card,
-      border: const Border(top: BorderSide(color: _C.border)),
+      color: DriverColors.card,
+      border: const Border(top: BorderSide(color: DriverColors.border)),
       boxShadow: [
         BoxShadow(
           color: Colors.black.withOpacity(0.05),
@@ -392,7 +377,7 @@ Future<bool> _submit(
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.message),
-          backgroundColor: _C.red,
+          backgroundColor: DriverColors.red,
           duration: const Duration(seconds: 6),
         ),
       );
@@ -403,7 +388,7 @@ Future<bool> _submit(
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Something went wrong. Please try again.'),
-          backgroundColor: _C.red,
+          backgroundColor: DriverColors.red,
         ),
       );
     }
@@ -481,12 +466,12 @@ class _DepartureLogScreenState extends ConsumerState<DepartureLogScreen> {
     final lastOdometer = widget.item.vehicleOdometer;
 
     return Scaffold(
-      backgroundColor: _C.bg,
+      backgroundColor: DriverColors.bg,
       appBar: _appBar('Record Departure'),
       bottomNavigationBar: _bottomButton(
         label: 'Save & Depart',
         icon: Icons.play_arrow_rounded,
-        color: _C.primary,
+        color: DriverColors.primary,
         onPressed: _save,
       ),
       body: Form(
@@ -571,7 +556,7 @@ class _DepartureLogScreenState extends ConsumerState<DepartureLogScreen> {
                     icon: Icons.local_gas_station_rounded,
                     label: 'Total fuel available',
                     value: '${_total.toStringAsFixed(2)} L',
-                    color: _C.yellow,
+                    color: DriverColors.yellow,
                   ),
                 ],
               ),
@@ -719,7 +704,7 @@ class _ReturnLogScreenState extends ConsumerState<ReturnLogScreen> {
     final timeError = _validateTimes();
     if (timeError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(timeError), backgroundColor: _C.red),
+        SnackBar(content: Text(timeError), backgroundColor: DriverColors.red),
       );
       return;
     }
@@ -754,12 +739,12 @@ class _ReturnLogScreenState extends ConsumerState<ReturnLogScreen> {
     final used = left == null ? null : dep.totalAvailableLiters - left;
 
     return Scaffold(
-      backgroundColor: _C.bg,
+      backgroundColor: DriverColors.bg,
       appBar: _appBar('Record Return'),
       bottomNavigationBar: _bottomButton(
         label: 'Save & Complete Trip',
         icon: Icons.flag_rounded,
-        color: _C.greenDark,
+        color: DriverColors.greenDark,
         onPressed: _save,
       ),
       body: Form(
@@ -851,7 +836,7 @@ class _ReturnLogScreenState extends ConsumerState<ReturnLogScreen> {
                           icon: Icons.route_rounded,
                           label: 'Distance',
                           value: distance == null || distance < 0 ? '—' : '$distance km',
-                          color: _C.primary,
+                          color: DriverColors.primary,
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -862,7 +847,7 @@ class _ReturnLogScreenState extends ConsumerState<ReturnLogScreen> {
                           value: used == null || used < 0
                               ? '—'
                               : '${used.toStringAsFixed(2)} L',
-                          color: _C.yellow,
+                          color: DriverColors.yellow,
                         ),
                       ),
                     ],
@@ -943,7 +928,7 @@ class _TimePickerField extends StatelessWidget {
   Widget build(BuildContext context) {
     final set = value != null;
     return Material(
-      color: set ? _C.primaryLight.withOpacity(0.5) : _C.field,
+      color: set ? DriverColors.primaryLight.withOpacity(0.5) : DriverColors.field,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
@@ -952,34 +937,34 @@ class _TimePickerField extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: set ? _C.primary : _C.border, width: set ? 1.3 : 1),
+            border: Border.all(color: set ? DriverColors.primary : DriverColors.border, width: set ? 1.3 : 1),
           ),
           child: Row(
             children: [
-              Icon(icon, color: _C.primary, size: 20),
+              Icon(icon, color: DriverColors.primary, size: 20),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(label,
                     style: const TextStyle(
-                        color: _C.textDark, fontSize: 13.5, fontWeight: FontWeight.w600)),
+                        color: DriverColors.textDark, fontSize: 13.5, fontWeight: FontWeight.w600)),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: set ? _C.primary : _C.card,
+                  color: set ? DriverColors.primary : DriverColors.card,
                   borderRadius: BorderRadius.circular(8),
-                  border: set ? null : Border.all(color: _C.border),
+                  border: set ? null : Border.all(color: DriverColors.border),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.access_time_rounded,
-                        size: 14, color: set ? Colors.white : _C.textMuted),
+                        size: 14, color: set ? Colors.white : DriverColors.textMuted),
                     const SizedBox(width: 4),
                     Text(
                       set ? DateFormat('h:mm a').format(value!) : 'Set time',
                       style: TextStyle(
-                        color: set ? Colors.white : _C.textMuted,
+                        color: set ? Colors.white : DriverColors.textMuted,
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),

@@ -5,6 +5,7 @@ import 'package:jtrips_app/features/instructor/presentation/screens/instructor_b
 import 'package:jtrips_app/features/auth/presentation/providers/auth_controller.dart';
 
 import '../../driver/presentation/screens/driver_bottomMenu_Section.dart';
+import 'Forgotpasswordscreen.dart';
 import 'LoginScreen.dart';
 import 'RegisterPage.dart';
 import 'data/app_user.dart';
@@ -48,7 +49,10 @@ class LoginPage extends ConsumerWidget {
             );
           },
           onForgotPasswordTap: () {
-            // TODO: wire up once a forgot-password screen/endpoint exists.
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+            );
           },
         ),
         if (isLoading)

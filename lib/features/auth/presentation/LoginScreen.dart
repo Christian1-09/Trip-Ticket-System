@@ -1,24 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// TODO: adjust this import to wherever your AppMedia class lives.
 
-import '../../../core/theme/media.dart';
+import 'auth_ui.dart';
 
-/// Screens at least this wide (desktop app, web) show the side-by-side layout.
-const double _wideBreakpoint = 900;
-
-/// Colors used by the new light login design.
-class _Palette {
-  static const navy = Color(0xFF0B1E5B);
-  static const blue = Color(0xFF1D4ED8);
-  static const yellow = Color(0xFFFFC629);
-  static const fieldFill = Color(0xFFEDF3FD);
-  static const registerFill = Color(0xFFF0F5FD);
-  static const textDark = Color(0xFF0F1B3D);
-  static const textMuted = Color(0xFF6B7489);
-  static const pageBg = Color(0xFFF4F7FC);
-}
-
+/// Unchanged visually. The palette, header, waves, text field and button
+/// that used to be private classes in this file now live in auth_ui.dart,
+/// so the password-reset screens can use the same ones instead of
+/// carrying copies that drift.
 class LoginScreen extends StatefulWidget {
   final void Function({
   required String fullName,
@@ -70,125 +58,29 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        backgroundColor: _Palette.pageBg,
-        body: LayoutBuilder(
-          builder: (context, constraints) =>
-          constraints.maxWidth >= _wideBreakpoint
-              ? _buildWide()
-              : _buildNarrow(),
-        ),
+      child: AuthPage(
+        heroTitle: 'Welcome Back!',
+        heroSubtitle: 'Login to your account and\ncontinue your journey.',
+        card: _buildCard(),
       ),
-    );
-  }
-
-  /// Phone layout: photo header on top, card below (unchanged).
-  Widget _buildNarrow() {
-    return Stack(
-      children: [
-        const Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: _BottomWaves(),
-        ),
-        SingleChildScrollView(
-          child: Column(
-            children: [
-              const _Header(),
-              Transform.translate(
-                offset: const Offset(0, -36),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _buildCard(),
-                ),
-              ),
-              const SizedBox(height: 40),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Desktop / web layout: photo on the left, form on the right.
-  Widget _buildWide() {
-    return Row(
-      children: [
-        const Expanded(
-          flex: 11,
-          child: _SideHero(
-            title: 'Welcome Back!',
-            subtitle: 'Login to your account and continue your journey.',
-          ),
-        ),
-        Expanded(
-          flex: 9,
-          child: Stack(
-            children: [
-              const Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: _BottomWaves(),
-              ),
-              Center(
-                child: SingleChildScrollView(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 40, vertical: 40),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 460),
-                    child: _buildCard(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 
   Widget _buildCard() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: _Palette.navy.withOpacity(0.10),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
+    return AuthCard(
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Center(
-              child: Text(
-                'Login to Your Account',
-                style: TextStyle(
-                  color: _Palette.textDark,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Center(
-              child: Text(
-                'Enter your credentials to continue.',
-                style: TextStyle(color: _Palette.textMuted, fontSize: 14),
-              ),
+            const AuthCardHeading(
+              title: 'Login to Your Account',
+              subtitle: 'Enter your credentials to continue.',
             ),
             const SizedBox(height: 28),
 
-            const _FieldLabel('Full Name'),
-            _AppTextField(
+            const AuthFieldLabel('Full Name'),
+            AuthTextField(
               controller: _fullNameController,
               hint: 'Enter your full name',
               icon: Icons.person_rounded,
@@ -202,8 +94,8 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 18),
 
-            const _FieldLabel('Password'),
-            _AppTextField(
+            const AuthFieldLabel('Password'),
+            AuthTextField(
               controller: _passwordController,
               hint: 'Enter your password',
               icon: Icons.lock_rounded,
@@ -215,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   _obscurePassword
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
-                  color: _Palette.navy,
+                  color: AuthPalette.navy,
                   size: 22,
                 ),
                 onPressed: () =>
@@ -245,9 +137,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           value: _rememberMe,
                           onChanged: (value) =>
                               setState(() => _rememberMe = value ?? false),
-                          activeColor: _Palette.navy,
+                          activeColor: AuthPalette.navy,
                           side: const BorderSide(
-                              color: _Palette.navy, width: 1.6),
+                              color: AuthPalette.navy, width: 1.6),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5),
                           ),
@@ -259,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const Text(
                         'Remember me',
                         style: TextStyle(
-                          color: _Palette.textDark,
+                          color: AuthPalette.textDark,
                           fontSize: 13.5,
                         ),
                       ),
@@ -271,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: const Text(
                     'Forgot Password?',
                     style: TextStyle(
-                      color: Color(0xFFF5B400),
+                      color: AuthPalette.link,
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
                     ),
@@ -281,548 +173,19 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 26),
 
-            _LoginButton(onTap: _handleLogin),
+            AuthPrimaryButton(label: 'Login', onTap: _handleLogin),
             const SizedBox(height: 22),
 
-            const _OrDivider(),
+            const AuthOrDivider(),
             const SizedBox(height: 18),
 
-            _RegisterBox(onTap: widget.onRegisterTap),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Top banner: background photo, navy fade, yellow swoosh, logo and greeting.
-class _Header extends StatelessWidget {
-  const _Header();
-
-  @override
-  Widget build(BuildContext context) {
-    final topInset = MediaQuery.of(context).padding.top;
-
-    return SizedBox(
-      height: 290 + topInset,
-      width: double.infinity,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset(
-            AppMedia.scheduleHeaderImage,
-            fit: BoxFit.cover,
-            alignment: Alignment.centerRight,
-          ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [
-                  _Palette.navy.withOpacity(0.96),
-                  _Palette.navy.withOpacity(0.70),
-                  _Palette.navy.withOpacity(0.0),
-                ],
-                stops: const [0.0, 0.45, 0.85],
-              ),
-            ),
-          ),
-          CustomPaint(painter: _HeaderSwooshPainter()),
-          Padding(
-            padding: EdgeInsets.fromLTRB(24, topInset + 20, 24, 60),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _JtripsLogo(),
-                Spacer(),
-                Text(
-                  'Welcome Back!',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Login to your account and\ncontinue your journey.',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 13.5,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _HeaderSwooshPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-
-    final yellow = Paint()
-      ..color = _Palette.yellow
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 12
-      ..strokeCap = StrokeCap.round;
-
-    final white = Paint()
-      ..color = Colors.white.withOpacity(0.85)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
-
-    final main = Path()
-      ..moveTo(w * 0.78, -10)
-      ..cubicTo(w * 0.60, h * 0.30, w * 0.55, h * 0.70, w * 0.28, h + 10);
-    canvas.drawPath(main, yellow);
-
-    final accent = Path()
-      ..moveTo(w * 0.84, -10)
-      ..cubicTo(w * 0.66, h * 0.32, w * 0.62, h * 0.72, w * 0.36, h + 10);
-    canvas.drawPath(accent, white);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _JtripsLogo extends StatelessWidget {
-  const _JtripsLogo();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Icon(Icons.airport_shuttle_rounded, color: Colors.white, size: 34),
-        RichText(
-          text: const TextSpan(
-            style: TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1,
-              height: 1.0,
-            ),
-            children: [
-              TextSpan(text: 'JT', style: TextStyle(color: Colors.white)),
-              TextSpan(text: 'RIPS', style: TextStyle(color: _Palette.yellow)),
-            ],
-          ),
-        ),
-        const SizedBox(height: 6),
-        const Text(
-          'TRAVEL MADE EASY',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 3,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _FieldLabel extends StatelessWidget {
-  final String text;
-
-  const _FieldLabel(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: _Palette.textDark,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-class _AppTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final String hint;
-  final IconData icon;
-  final bool obscureText;
-  final TextInputType? keyboardType;
-  final TextInputAction? textInputAction;
-  final ValueChanged<String>? onSubmitted;
-  final Widget? suffixIcon;
-  final String? Function(String?)? validator;
-
-  const _AppTextField({
-    required this.controller,
-    required this.hint,
-    required this.icon,
-    this.obscureText = false,
-    this.keyboardType,
-    this.textInputAction,
-    this.onSubmitted,
-    this.suffixIcon,
-    this.validator,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    OutlineInputBorder border(Color color, [double width = 1]) =>
-        OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: color, width: width),
-        );
-
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      textInputAction: textInputAction,
-      onFieldSubmitted: onSubmitted,
-      validator: validator,
-      style: const TextStyle(color: _Palette.textDark, fontSize: 14.5),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: _Palette.textMuted, fontSize: 14),
-        prefixIcon: Padding(
-          padding: const EdgeInsets.only(left: 14, right: 10),
-          child: Icon(icon, color: _Palette.navy, size: 24),
-        ),
-        prefixIconConstraints: const BoxConstraints(minWidth: 48),
-        suffixIcon: suffixIcon,
-        filled: true,
-        fillColor: _Palette.fieldFill,
-        contentPadding: const EdgeInsets.symmetric(vertical: 18),
-        border: border(Colors.transparent),
-        enabledBorder: border(Colors.transparent),
-        focusedBorder: border(_Palette.blue, 1.5),
-        errorBorder: border(Colors.redAccent),
-        focusedErrorBorder: border(Colors.redAccent, 1.5),
-      ),
-    );
-  }
-}
-
-class _LoginButton extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _LoginButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 56,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: _Palette.yellow.withOpacity(0.45),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _Palette.yellow,
-          foregroundColor: _Palette.textDark,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-        ),
-        child: const Stack(
-          alignment: Alignment.center,
-          children: [
-            Text(
-              'Login',
-              style: TextStyle(
-                color: _Palette.textDark,
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Icon(Icons.arrow_forward_rounded,
-                  color: _Palette.textDark, size: 24),
+            AuthFooterAction(
+              question: "Don't have an account?",
+              action: 'Register',
+              onTap: widget.onRegisterTap,
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _OrDivider extends StatelessWidget {
-  const _OrDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    final line = Expanded(
-      child: Divider(color: _Palette.textMuted.withOpacity(0.25), thickness: 1),
-    );
-    return Row(
-      children: [
-        line,
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
-            'OR',
-            style: TextStyle(color: _Palette.textMuted, fontSize: 12),
-          ),
-        ),
-        line,
-      ],
-    );
-  }
-}
-
-class _RegisterBox extends StatelessWidget {
-  final VoidCallback? onTap;
-
-  const _RegisterBox({this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: _Palette.registerFill,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
-        child: const Padding(
-          padding: EdgeInsets.symmetric(vertical: 18),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Don't have an account?  ",
-                style: TextStyle(color: _Palette.textDark, fontSize: 13.5),
-              ),
-              Text(
-                'Register',
-                style: TextStyle(
-                  color: _Palette.blue,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              SizedBox(width: 6),
-              Icon(Icons.arrow_forward_rounded, color: _Palette.blue, size: 18),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Decorative blue/yellow waves along the bottom of the screen.
-class _BottomWaves extends StatelessWidget {
-  const _BottomWaves();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 140,
-      width: double.infinity,
-      child: CustomPaint(painter: _BottomWavesPainter()),
-    );
-  }
-}
-
-class _BottomWavesPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-
-    // Soft light-blue wave
-    final light = Path()
-      ..moveTo(0, h * 0.35)
-      ..quadraticBezierTo(w * 0.35, h * 0.05, w * 0.65, h * 0.40)
-      ..quadraticBezierTo(w * 0.85, h * 0.60, w, h * 0.30)
-      ..lineTo(w, h)
-      ..lineTo(0, h)
-      ..close();
-    canvas.drawPath(light, Paint()..color = const Color(0xFFCFE0FB));
-
-    // Strong blue wave
-    final blue = Path()
-      ..moveTo(0, h * 0.60)
-      ..quadraticBezierTo(w * 0.30, h * 0.40, w * 0.55, h * 0.75)
-      ..quadraticBezierTo(w * 0.80, h * 1.0, w, h * 0.65)
-      ..lineTo(w, h)
-      ..lineTo(0, h)
-      ..close();
-    canvas.drawPath(
-      blue,
-      Paint()
-        ..shader = const LinearGradient(
-          colors: [_Palette.blue, _Palette.navy],
-        ).createShader(Offset.zero & size),
-    );
-
-    // Yellow swoosh
-    final yellow = Path()
-      ..moveTo(w * 0.30, h)
-      ..quadraticBezierTo(w * 0.70, h * 0.70, w, h * 0.35);
-    canvas.drawPath(
-      yellow,
-      Paint()
-        ..color = _Palette.yellow
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 10
-        ..strokeCap = StrokeCap.round,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// Left half of the screen on desktop / web: full-height photo with the
-/// logo, title and a few highlights.
-class _SideHero extends StatelessWidget {
-  final String title;
-  final String subtitle;
-
-  const _SideHero({required this.title, required this.subtitle});
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        Image.asset(
-          AppMedia.scheduleHeaderImage,
-          fit: BoxFit.cover,
-          alignment: const Alignment(0.4, 0),
-        ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                _Palette.navy.withOpacity(0.95),
-                _Palette.navy.withOpacity(0.65),
-                _Palette.navy.withOpacity(0.10),
-              ],
-              stops: const [0.0, 0.5, 1.0],
-            ),
-          ),
-        ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.transparent,
-                _Palette.navy.withOpacity(0.55),
-              ],
-              stops: const [0.5, 1.0],
-            ),
-          ),
-        ),
-        CustomPaint(painter: _HeaderSwooshPainter()),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(56, 48, 56, 56),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _JtripsLogo(),
-              const Spacer(),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 42,
-                  fontWeight: FontWeight.w900,
-                  height: 1.1,
-                ),
-              ),
-              const SizedBox(height: 14),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 440),
-                child: Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 17,
-                    height: 1.5,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              const _HeroPoint(
-                icon: Icons.touch_app_rounded,
-                text: 'Book a trip in a few steps',
-              ),
-              const _HeroPoint(
-                icon: Icons.track_changes_rounded,
-                text: 'Follow every approval as it happens',
-              ),
-              const _HeroPoint(
-                icon: Icons.verified_user_rounded,
-                text: 'Safe, comfortable and reliable trips',
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _HeroPoint extends StatelessWidget {
-  final IconData icon;
-  final String text;
-
-  const _HeroPoint({required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: _Palette.yellow,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: _Palette.navy, size: 20),
-          ),
-          const SizedBox(width: 14),
-          Flexible(
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

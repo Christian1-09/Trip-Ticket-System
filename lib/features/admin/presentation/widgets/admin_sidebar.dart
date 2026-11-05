@@ -19,6 +19,7 @@ const adminNavItems = <AdminNavItem>[
   AdminNavItem(Icons.bar_chart_rounded, 'Analysis'),
   AdminNavItem(Icons.person_add_alt_outlined, 'Account request'),
   AdminNavItem(Icons.receipt_long_outlined, 'Trip Ticket log'),
+  AdminNavItem(Icons.report_gmailerrorred_outlined, 'Incidents'),
   AdminNavItem(Icons.tune_rounded, 'Setup'),          // Destinations + Departments
   AdminNavItem(Icons.settings_outlined, 'Settings'),
   AdminNavItem(Icons.person_outline, 'Profile'),

@@ -7,7 +7,10 @@ import 'package:jtrips_app/features/admin/data/models/admin_trip_model.dart';
 import 'package:jtrips_app/features/driver/presentation/widgets/common.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/theme/driver_colors.dart';
 import '../../../../core/theme/printing/print_trip_ticket.dart';
+import '../../../incident/presentation/presentation/screens/report_incident_screen.dart';
+import '../../../incident/presentation/providers/incident_provider.dart';
 import '../../data/driver_models.dart';
 import '../providers/driver_trip_providers.dart';
 import 'trip_log_forms.dart';
@@ -25,24 +28,6 @@ String _durationLabel(Duration? d) {
   return minutes == 0 ? '${hours}H' : '${hours}H ${minutes}M';
 }
 
-/// Light theme palette for this screen (matches the Home / Assigned Trips look).
-class _C {
-  static const bg = Color(0xFFF2F5FB);
-  static const card = Colors.white;
-  static const headerTint = Color(0xFFF6F8FE);
-  static const primary = Color(0xFF2448B8);
-  static const primaryLight = Color(0xFFE8EEFF);
-  static const navy = Color(0xFF1E2A5A);
-  static const textDark = Color(0xFF111827);
-  static const textMuted = Color(0xFF6B7280);
-  static const border = Color(0xFFE5E9F2);
-  static const yellow = Color(0xFFF5B400);
-  static const yellowBg = Color(0xFFFFF7E0);
-  static const green = Color(0xFF16A34A);
-  static const greenDark = Color(0xFF2E7D32);
-  static const red = Color(0xFFDC2626);
-  static const orange = Color(0xFFF59E0B);
-}
 
 /// Full details of one of the driver's trips, plus the action for its
 /// current stage: Accept/Decline → Record Departure → Record Return.
@@ -56,14 +41,14 @@ class TripInformation extends ConsumerWidget {
     final ticket = tripAsync.valueOrNull?.trip.ticketNumber;
 
     return Scaffold(
-      backgroundColor: _C.bg,
+      backgroundColor: DriverColors.bg,
       appBar: AppBar(
-        backgroundColor: _C.card,
+        backgroundColor: DriverColors.card,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 1,
         shadowColor: Colors.black12,
-        iconTheme: const IconThemeData(color: _C.textDark),
+        iconTheme: const IconThemeData(color: DriverColors.textDark),
         titleSpacing: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,12 +56,12 @@ class TripInformation extends ConsumerWidget {
             const Text(
               'Trip Details',
               style: TextStyle(
-                  color: _C.textDark, fontSize: 18, fontWeight: FontWeight.w800),
+                  color: DriverColors.textDark, fontSize: 18, fontWeight: FontWeight.w800),
             ),
             if (ticket != null)
               Text(
                 ticket,
-                style: const TextStyle(color: _C.textMuted, fontSize: 12),
+                style: const TextStyle(color: DriverColors.textMuted, fontSize: 12),
               ),
           ],
         ),
@@ -89,17 +74,17 @@ class TripInformation extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline_rounded, size: 44, color: _C.textMuted),
+                const Icon(Icons.error_outline_rounded, size: 44, color: DriverColors.textMuted),
                 const SizedBox(height: 10),
                 Text(
                   err is ApiException ? err.message : 'Could not load this trip.',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: _C.textMuted),
+                  style: const TextStyle(color: DriverColors.textMuted),
                 ),
                 const SizedBox(height: 8),
                 FilledButton(
                   onPressed: () => ref.invalidate(driverTripProvider(tripId)),
-                  style: FilledButton.styleFrom(backgroundColor: _C.primary),
+                  style: FilledButton.styleFrom(backgroundColor: DriverColors.primary),
                   child: const Text('Retry'),
                 ),
               ],
@@ -174,12 +159,12 @@ class _Card extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: _C.card,
+        color: DriverColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _C.border),
+        border: Border.all(color: DriverColors.border),
         boxShadow: [
           BoxShadow(
-            color: _C.primary.withOpacity(0.05),
+            color: DriverColors.primary.withOpacity(0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -190,7 +175,7 @@ class _Card extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            color: _C.headerTint,
+            color: DriverColors.headerTint,
             padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
             child: Row(
               children: [
@@ -198,24 +183,24 @@ class _Card extends StatelessWidget {
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(
-                    color: _C.primaryLight,
+                    color: DriverColors.primaryLight,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(icon, size: 16, color: _C.primary),
+                  child: Icon(icon, size: 16, color: DriverColors.primary),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     title,
                     style: const TextStyle(
-                        color: _C.textDark, fontSize: 15, fontWeight: FontWeight.w700),
+                        color: DriverColors.textDark, fontSize: 15, fontWeight: FontWeight.w700),
                   ),
                 ),
                 if (trailing != null) trailing!,
               ],
             ),
           ),
-          const Divider(height: 1, thickness: 1, color: _C.border),
+          const Divider(height: 1, thickness: 1, color: DriverColors.border),
           Padding(padding: padding, child: child),
         ],
       ),
@@ -283,17 +268,17 @@ class _DetailRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 11),
       decoration: BoxDecoration(
-        border: last ? null : const Border(bottom: BorderSide(color: _C.border)),
+        border: last ? null : const Border(bottom: BorderSide(color: DriverColors.border)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: _C.textMuted),
+          Icon(icon, size: 18, color: DriverColors.textMuted),
           const SizedBox(width: 10),
           SizedBox(
             width: 92,
             child: Text(label,
-                style: const TextStyle(color: _C.textMuted, fontSize: 13)),
+                style: const TextStyle(color: DriverColors.textMuted, fontSize: 13)),
           ),
           Expanded(
             child: Column(
@@ -301,13 +286,13 @@ class _DetailRow extends StatelessWidget {
               children: [
                 Text(value,
                     style: const TextStyle(
-                        color: _C.textDark,
+                        color: DriverColors.textDark,
                         fontSize: 13.5,
                         fontWeight: FontWeight.w700)),
                 if (subValue != null) ...[
                   const SizedBox(height: 2),
                   Text(subValue!,
-                      style: const TextStyle(color: _C.textMuted, fontSize: 12)),
+                      style: const TextStyle(color: DriverColors.textMuted, fontSize: 12)),
                 ],
               ],
             ),
@@ -343,13 +328,13 @@ class _Stat extends StatelessWidget {
           child: Text(value,
               maxLines: 1,
               style: const TextStyle(
-                  color: _C.textDark, fontSize: 14.5, fontWeight: FontWeight.w800)),
+                  color: DriverColors.textDark, fontSize: 14.5, fontWeight: FontWeight.w800)),
         ),
         const SizedBox(height: 2),
         Text(label,
             textAlign: TextAlign.center,
             style: const TextStyle(
-                color: _C.textMuted,
+                color: DriverColors.textMuted,
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5)),
@@ -358,22 +343,29 @@ class _Stat extends StatelessWidget {
   }
 }
 
-Widget _vDivider() => Container(width: 1, height: 46, color: _C.border);
+Widget _vDivider() => Container(width: 1, height: 46, color: DriverColors.border);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Action bar
 // ─────────────────────────────────────────────────────────────────────────────
-
 class _ActionBar extends ConsumerWidget {
   final DriverTrip item;
   const _ActionBar({required this.item});
+
+  /// From acceptance onwards. Before that the driver hasn't taken the
+  /// trip, and a completed trip can still need a report filed about
+  /// something nobody noticed until the vehicle was back.
+  bool get _canReport =>
+      item.status == AdminTripStatus.driverAccepted ||
+          item.status == AdminTripStatus.ongoing ||
+          item.status == AdminTripStatus.completed;
 
   void _message(BuildContext context, String text, {bool error = false}) {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(text),
-        backgroundColor: error ? _C.red : _C.green,
+        backgroundColor: error ? DriverColors.red : DriverColors.green,
         duration: Duration(seconds: error ? 6 : 3),
       ),
     );
@@ -409,24 +401,24 @@ class _ActionBar extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: _C.card,
+        backgroundColor: DriverColors.card,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Accept this trip?',
-            style: TextStyle(color: _C.textDark, fontWeight: FontWeight.w800)),
+            style: TextStyle(color: DriverColors.textDark, fontWeight: FontWeight.w800)),
         content: Text(
           '${trip.dateLabel}, ${trip.departureLabel} to ${trip.destinationLabel} '
               'using ${trip.vehicleModel} (${trip.vehiclePlate}).',
-          style: const TextStyle(color: _C.textMuted),
+          style: const TextStyle(color: DriverColors.textMuted),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel', style: TextStyle(color: _C.textMuted)),
+            child: const Text('Cancel', style: TextStyle(color: DriverColors.textMuted)),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            style: FilledButton.styleFrom(backgroundColor: _C.greenDark),
+            style: FilledButton.styleFrom(backgroundColor: DriverColors.greenDark),
             child: const Text('Accept'),
           ),
         ],
@@ -481,6 +473,26 @@ class _ActionBar extends ConsumerWidget {
     }
   }
 
+  /// Opens the report form. The location is left for the server to fill
+  /// from the tracker when the trip is ONGOING — the vehicle's own fix is
+  /// better than anything the driver's phone knows about where the
+  /// vehicle is.
+  Future<void> _report(BuildContext context, WidgetRef ref) async {
+    final trip = item.trip;
+    final filed = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReportIncidentScreen(
+          tripRequestId: item.id,
+          tripLabel: trip.ticketNumber,
+          vehicleLabel: '${trip.vehicleModel} · ${trip.vehiclePlate}',
+          tripIsOngoing: item.status == AdminTripStatus.ongoing,
+        ),
+      ),
+    );
+    if (filed == true) refreshDriverData(ref, tripId: item.id);
+  }
+
   ButtonStyle _filled(Color color) => ElevatedButton.styleFrom(
     backgroundColor: color,
     foregroundColor: Colors.white,
@@ -492,8 +504,8 @@ class _ActionBar extends ConsumerWidget {
   );
 
   ButtonStyle get _outlinedRed => OutlinedButton.styleFrom(
-    foregroundColor: _C.red,
-    side: const BorderSide(color: _C.red, width: 1.4),
+    foregroundColor: DriverColors.red,
+    side: const BorderSide(color: DriverColors.red, width: 1.4),
     padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
   );
@@ -519,7 +531,7 @@ class _ActionBar extends ConsumerWidget {
           Expanded(
             child: ElevatedButton(
               onPressed: () => _accept(context, ref),
-              style: _filled(_C.greenDark),
+              style: _filled(DriverColors.greenDark),
               child: _label('Accept'),
             ),
           ),
@@ -536,18 +548,18 @@ class _ActionBar extends ConsumerWidget {
               margin: const EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: _C.primaryLight,
+                color: DriverColors.primaryLight,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline_rounded, size: 16, color: _C.primary),
+                  const Icon(Icons.info_outline_rounded, size: 16, color: DriverColors.primary),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'You can record the departure from '
                           '${_dateTime.format(item.departWindowOpensAt)}.',
-                      style: const TextStyle(color: _C.primary, fontSize: 12),
+                      style: const TextStyle(color: DriverColors.primary, fontSize: 12),
                     ),
                   ),
                 ],
@@ -566,7 +578,7 @@ class _ActionBar extends ConsumerWidget {
                   onPressed: tooEarly ? null : () => _depart(context, ref),
                   icon: const Icon(Icons.play_arrow_rounded),
                   label: _label('Record Departure'),
-                  style: _filled(_C.primary),
+                  style: _filled(DriverColors.primary),
                 ),
               ),
             ],
@@ -580,7 +592,7 @@ class _ActionBar extends ConsumerWidget {
           onPressed: () => _return(context, ref),
           icon: const Icon(Icons.flag_rounded),
           label: _label('Record Return'),
-          style: _filled(_C.greenDark),
+          style: _filled(DriverColors.greenDark),
         ),
       );
     } else if (item.status == AdminTripStatus.completed) {
@@ -593,17 +605,66 @@ class _ActionBar extends ConsumerWidget {
           onPressed: () => printTripTicket(context, ref, item.id),
           icon: const Icon(Icons.print_rounded),
           label: _label('Print Trip Ticket'),
-          style: _filled(_C.primary),
+          style: _filled(DriverColors.primary),
         ),
       );
     }
 
-    if (content == null) return const SizedBox.shrink();
+    // Only loaded for trips where reporting is possible, so the ordinary
+    // detail view doesn't make an extra request it has no use for.
+    final filed = _canReport
+        ? (ref.watch(tripIncidentsProvider(item.id)).valueOrNull ?? const [])
+        : const [];
+
+    final reportStrip = !_canReport
+        ? null
+        : Padding(
+      padding: EdgeInsets.only(bottom: content == null ? 0 : 10),
+      child: Row(
+        children: [
+          if (filed.isNotEmpty) ...[
+            Expanded(
+              child: Row(
+                children: [
+                  const Icon(Icons.report_gmailerrorred_outlined,
+                      size: 16, color: DriverColors.orange),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      '${filed.length} incident${filed.length == 1 ? '' : 's'} reported',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: DriverColors.orange,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+          ],
+          if (filed.isEmpty) const Spacer(),
+          OutlinedButton.icon(
+            onPressed: () => _report(context, ref),
+            icon: const Icon(Icons.report_problem_outlined, size: 18),
+            label: Text(
+              filed.isEmpty ? 'Report Incident' : 'Report another',
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            style: _outlinedRed,
+          ),
+        ],
+      ),
+    );
+
+    if (content == null && reportStrip == null) return const SizedBox.shrink();
 
     return Container(
       decoration: BoxDecoration(
-        color: _C.card,
-        border: const Border(top: BorderSide(color: _C.border)),
+        color: DriverColors.card,
+        border: const Border(top: BorderSide(color: DriverColors.border)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -616,7 +677,13 @@ class _ActionBar extends ConsumerWidget {
         top: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-          child: content,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (reportStrip != null) reportStrip,
+              if (content != null) content,
+            ],
+          ),
         ),
       ),
     );
@@ -644,12 +711,12 @@ class _DeclineDialogState extends State<_DeclineDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: _C.card,
+      backgroundColor: DriverColors.card,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Text(
         widget.alreadyAccepted ? "Can't make this trip?" : 'Decline this trip?',
-        style: const TextStyle(color: _C.textDark, fontWeight: FontWeight.w800),
+        style: const TextStyle(color: DriverColors.textDark, fontWeight: FontWeight.w800),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -657,27 +724,27 @@ class _DeclineDialogState extends State<_DeclineDialog> {
         children: [
           const Text(
             'The head driver will assign another driver. Please say why.',
-            style: TextStyle(color: _C.textMuted, fontSize: 13),
+            style: TextStyle(color: DriverColors.textMuted, fontSize: 13),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _controller,
             maxLines: 3,
             autofocus: true,
-            style: const TextStyle(color: _C.textDark),
+            style: const TextStyle(color: DriverColors.textDark),
             decoration: InputDecoration(
               hintText: 'Reason *',
-              hintStyle: const TextStyle(color: _C.textMuted),
+              hintStyle: const TextStyle(color: DriverColors.textMuted),
               errorText: _error,
               filled: true,
-              fillColor: _C.bg,
+              fillColor: DriverColors.bg,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: _C.border),
+                borderSide: const BorderSide(color: DriverColors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: _C.primary, width: 1.4),
+                borderSide: const BorderSide(color: DriverColors.primary, width: 1.4),
               ),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
@@ -690,7 +757,7 @@ class _DeclineDialogState extends State<_DeclineDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel', style: TextStyle(color: _C.textMuted)),
+          child: const Text('Cancel', style: TextStyle(color: DriverColors.textMuted)),
         ),
         FilledButton(
           onPressed: () {
@@ -701,7 +768,7 @@ class _DeclineDialogState extends State<_DeclineDialog> {
             }
             Navigator.pop(context, reason);
           },
-          style: FilledButton.styleFrom(backgroundColor: _C.red),
+          style: FilledButton.styleFrom(backgroundColor: DriverColors.red),
           child: const Text('Decline'),
         ),
       ],
@@ -722,13 +789,13 @@ class _UrgentBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       decoration: BoxDecoration(
-        color: _C.yellowBg,
+        color: DriverColors.yellowBg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _C.yellow.withOpacity(0.6)),
+        border: Border.all(color: DriverColors.yellow.withOpacity(0.6)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: _C.yellow, size: 22),
+          const Icon(Icons.warning_amber_rounded, color: DriverColors.yellow, size: 22),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -775,7 +842,7 @@ class _RequesterSection extends StatelessWidget {
       title: 'Requester Information',
       child: Row(
         children: [
-          InitialsAvatar(name: trip.requester.fullName, radius: 26, color: _C.navy),
+          InitialsAvatar(name: trip.requester.fullName, radius: 26, color: DriverColors.navy),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -784,20 +851,20 @@ class _RequesterSection extends StatelessWidget {
                 Text(
                   trip.requester.fullName,
                   style: const TextStyle(
-                      color: _C.textDark, fontSize: 16, fontWeight: FontWeight.w800),
+                      color: DriverColors.textDark, fontSize: 16, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 2),
                 Text(trip.departmentName,
-                    style: const TextStyle(color: _C.textMuted, fontSize: 12.5)),
+                    style: const TextStyle(color: DriverColors.textMuted, fontSize: 12.5)),
                 if (hasContact)
                   Text(contact,
-                      style: const TextStyle(color: _C.textMuted, fontSize: 12.5)),
+                      style: const TextStyle(color: DriverColors.textMuted, fontSize: 12.5)),
               ],
             ),
           ),
           if (hasContact)
             Material(
-              color: _C.primaryLight,
+              color: DriverColors.primaryLight,
               borderRadius: BorderRadius.circular(12),
               child: InkWell(
                 borderRadius: BorderRadius.circular(12),
@@ -806,11 +873,11 @@ class _RequesterSection extends StatelessWidget {
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   child: Column(
                     children: [
-                      Icon(Icons.call_rounded, color: _C.primary, size: 20),
+                      Icon(Icons.call_rounded, color: DriverColors.primary, size: 20),
                       SizedBox(height: 2),
                       Text('Call',
                           style: TextStyle(
-                              color: _C.primary,
+                              color: DriverColors.primary,
                               fontSize: 12,
                               fontWeight: FontWeight.w700)),
                     ],
@@ -845,7 +912,7 @@ class _ScheduleSection extends StatelessWidget {
           Expanded(
             child: _Stat(
                 icon: Icons.access_time_rounded,
-                color: _C.yellow,
+                color: DriverColors.yellow,
                 value: trip.departureLabel,
                 label: 'DEPARTURE'),
           ),
@@ -853,7 +920,7 @@ class _ScheduleSection extends StatelessWidget {
           Expanded(
             child: _Stat(
                 icon: Icons.history_rounded,
-                color: _C.primary,
+                color: DriverColors.primary,
                 value: end == null ? '—' : _time.format(end),
                 label: trip.isWaitMode ? 'RETURN' : 'BACK BY'),
           ),
@@ -861,7 +928,7 @@ class _ScheduleSection extends StatelessWidget {
           Expanded(
             child: _Stat(
                 icon: Icons.hourglass_bottom_rounded,
-                color: _C.primary,
+                color: DriverColors.primary,
                 value: _durationLabel(item.plannedDuration),
                 label: 'DURATION'),
           ),
@@ -869,7 +936,7 @@ class _ScheduleSection extends StatelessWidget {
           Expanded(
             child: _Stat(
                 icon: Icons.explore_outlined,
-                color: _C.textMuted,
+                color: DriverColors.textMuted,
                 value: distance,
                 label: 'DISTANCE'),
           ),
@@ -910,17 +977,17 @@ class _RouteSection extends StatelessWidget {
                               ? 22
                               : 10,
                           color: stops[i].type == 'ORIGIN'
-                              ? _C.primary
+                              ? DriverColors.primary
                               : stops[i].type == 'DESTINATION'
-                              ? _C.yellow
-                              : _C.textMuted,
+                              ? DriverColors.yellow
+                              : DriverColors.textMuted,
                         ),
                         if (i != stops.length - 1)
                           Expanded(
                             child: Container(
                               width: 2,
                               margin: const EdgeInsets.symmetric(vertical: 4),
-                              color: _C.border,
+                              color: DriverColors.border,
                             ),
                           ),
                       ],
@@ -940,7 +1007,7 @@ class _RouteSection extends StatelessWidget {
                                 ? 'TO'
                                 : 'STOP',
                             style: const TextStyle(
-                              color: _C.textMuted,
+                              color: DriverColors.textMuted,
                               fontSize: 10.5,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 0.6,
@@ -950,7 +1017,7 @@ class _RouteSection extends StatelessWidget {
                           Text(
                             stops[i].address,
                             style: const TextStyle(
-                              color: _C.textDark,
+                              color: DriverColors.textDark,
                               fontSize: 14.5,
                               fontWeight: FontWeight.w800,
                             ),
@@ -960,7 +1027,7 @@ class _RouteSection extends StatelessWidget {
                             Text(
                               '~${stops[i].travelMinutes} min from base'
                                   '${stops[i].isCustom ? ' (estimate)' : ''}',
-                              style: const TextStyle(color: _C.textMuted, fontSize: 12),
+                              style: const TextStyle(color: DriverColors.textMuted, fontSize: 12),
                             ),
                           ],
                         ],
@@ -983,15 +1050,15 @@ class _TripDetailsSection extends StatelessWidget {
   Color get _statusColor {
     switch (item.status) {
       case AdminTripStatus.headDriverApproved:
-        return _C.orange;
+        return DriverColors.orange;
       case AdminTripStatus.driverAccepted:
-        return _C.primary;
+        return DriverColors.primary;
       case AdminTripStatus.ongoing:
-        return _C.green;
+        return DriverColors.green;
       case AdminTripStatus.completed:
-        return _C.green;
+        return DriverColors.green;
       default:
-        return _C.textMuted;
+        return DriverColors.textMuted;
     }
   }
 
@@ -1077,9 +1144,9 @@ class _VehicleSection extends StatelessWidget {
                 width: 72,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: _C.bg,
+                  color: DriverColors.bg,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _C.border),
+                  border: Border.all(color: DriverColors.border),
                 ),
                 child: const Icon(Icons.airport_shuttle_rounded,
                     color: Color(0xFF9AA8C7), size: 30),
@@ -1092,18 +1159,18 @@ class _VehicleSection extends StatelessWidget {
                     Text(
                       trip.vehicleModel,
                       style: const TextStyle(
-                          color: _C.textDark, fontSize: 16, fontWeight: FontWeight.w800),
+                          color: DriverColors.textDark, fontSize: 16, fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       'Plate ${trip.vehiclePlate}',
-                      style: const TextStyle(color: _C.textMuted, fontSize: 12.5),
+                      style: const TextStyle(color: DriverColors.textMuted, fontSize: 12.5),
                     ),
                     Text(
                       item.vehicleOdometer == null
                           ? 'No odometer reading yet'
                           : 'Last odometer: ${item.vehicleOdometer} km',
-                      style: const TextStyle(color: _C.textMuted, fontSize: 12.5),
+                      style: const TextStyle(color: DriverColors.textMuted, fontSize: 12.5),
                     ),
                   ],
                 ),
@@ -1112,14 +1179,14 @@ class _VehicleSection extends StatelessWidget {
           ),
           if (arrival != null) ...[
             const SizedBox(height: 14),
-            const Divider(height: 1, color: _C.border),
+            const Divider(height: 1, color: DriverColors.border),
             const SizedBox(height: 14),
             Row(
               children: [
                 Expanded(
                   child: _Stat(
                     icon: Icons.local_gas_station_rounded,
-                    color: _C.yellow,
+                    color: DriverColors.yellow,
                     value: '${arrival.gasolineUsedLiters.toStringAsFixed(1)} L',
                     label: 'FUEL USED',
                   ),
@@ -1128,7 +1195,7 @@ class _VehicleSection extends StatelessWidget {
                 Expanded(
                   child: _Stat(
                     icon: Icons.speed_rounded,
-                    color: _C.primary,
+                    color: DriverColors.primary,
                     value: '${arrival.odometerEnd}',
                     label: 'ODOMETER',
                   ),
@@ -1137,7 +1204,7 @@ class _VehicleSection extends StatelessWidget {
                 Expanded(
                   child: _Stat(
                     icon: Icons.route_rounded,
-                    color: _C.green,
+                    color: DriverColors.green,
                     value: '${arrival.distanceTraveledKm.toStringAsFixed(0)} km',
                     label: 'DISTANCE',
                   ),
@@ -1170,7 +1237,7 @@ class _PassengersSection extends StatelessWidget {
         width: 24,
         height: 24,
         alignment: Alignment.center,
-        decoration: const BoxDecoration(color: _C.primary, shape: BoxShape.circle),
+        decoration: const BoxDecoration(color: DriverColors.primary, shape: BoxShape.circle),
         child: Text(
           '${people.length}',
           style: const TextStyle(
@@ -1186,26 +1253,26 @@ class _PassengersSection extends StatelessWidget {
               decoration: BoxDecoration(
                 border: i == people.length - 1
                     ? null
-                    : const Border(bottom: BorderSide(color: _C.border)),
+                    : const Border(bottom: BorderSide(color: DriverColors.border)),
               ),
               child: Row(
                 children: [
                   InitialsAvatar(
                     name: people[i].$1,
                     radius: 17,
-                    color: i == 0 ? _C.navy : _C.primary,
+                    color: i == 0 ? DriverColors.navy : DriverColors.primary,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       people[i].$1,
                       style: const TextStyle(
-                          color: _C.textDark, fontSize: 14, fontWeight: FontWeight.w600),
+                          color: DriverColors.textDark, fontSize: 14, fontWeight: FontWeight.w600),
                     ),
                   ),
                   _Pill(
                     text: people[i].$2,
-                    color: i == 0 ? _C.primary : _C.textMuted,
+                    color: i == 0 ? DriverColors.primary : DriverColors.textMuted,
                   ),
                 ],
               ),
@@ -1226,11 +1293,11 @@ class _LogsSection extends StatelessWidget {
       children: [
         Expanded(
           child: Text(label,
-              style: const TextStyle(color: _C.textMuted, fontSize: 13)),
+              style: const TextStyle(color: DriverColors.textMuted, fontSize: 13)),
         ),
         Text(value,
             style: const TextStyle(
-                color: _C.textDark, fontSize: 13, fontWeight: FontWeight.w700)),
+                color: DriverColors.textDark, fontSize: 13, fontWeight: FontWeight.w700)),
       ],
     ),
   );
@@ -1252,7 +1319,7 @@ class _LogsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _heading('DEPARTURE', _C.yellow),
+          _heading('DEPARTURE', DriverColors.yellow),
           _line('Odometer', '${d.odometerStart} km'),
           _line('Fuel in tank', _l(d.fuelBalanceInTank)),
           _line('Issued by office', _l(d.fuelIssuedByOffice)),
@@ -1261,9 +1328,9 @@ class _LogsSection extends StatelessWidget {
           if (r != null) ...[
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 10),
-              child: Divider(height: 1, color: _C.border),
+              child: Divider(height: 1, color: DriverColors.border),
             ),
-            _heading('RETURN', _C.green),
+            _heading('RETURN', DriverColors.green),
             _line('Odometer', '${r.odometerEnd} km'),
             _line('Distance', '${r.distanceTraveledKm.toStringAsFixed(0)} km'),
             _line('Fuel used', _l(r.gasolineUsedLiters)),
@@ -1301,19 +1368,19 @@ class _TimelineSection extends StatelessWidget {
     final trip = item.trip;
     final events = <_Event>[
       _Event(trip.createdAt, 'Trip requested', trip.requester.fullName,
-          Icons.send_rounded, _C.textMuted),
+          Icons.send_rounded, DriverColors.textMuted),
     ];
     if (item.adminApprovedAt != null) {
       events.add(_Event(item.adminApprovedAt!, 'Approved by admin', '',
-          Icons.verified_outlined, _C.primary));
+          Icons.verified_outlined, DriverColors.primary));
     }
     if (item.headDriverApprovedAt != null) {
       events.add(_Event(item.headDriverApprovedAt!, 'Approved by head driver', '',
-          Icons.verified_user_outlined, _C.primary));
+          Icons.verified_user_outlined, DriverColors.primary));
     }
     if (item.driverAcceptedAt != null) {
       events.add(_Event(item.driverAcceptedAt!, 'You accepted the trip', '',
-          Icons.check_rounded, _C.green));
+          Icons.check_rounded, DriverColors.green));
     }
     final d = item.departure;
     if (d != null) {
@@ -1326,7 +1393,7 @@ class _TimelineSection extends StatelessWidget {
         'Departed from garage',
         '${trip.vehiclePlate} • Odometer: ${d.odometerStart}km • $lateness',
         Icons.play_arrow_rounded,
-        _C.yellow,
+        DriverColors.yellow,
       ));
     }
     final r = item.arrival;
@@ -1336,7 +1403,7 @@ class _TimelineSection extends StatelessWidget {
         'Trip completed & returned',
         'Back to garage • Odometer: ${r.odometerEnd}km',
         Icons.flag_rounded,
-        _C.green,
+        DriverColors.green,
       ));
     }
     events.sort((a, b) => a.time.compareTo(b.time));
@@ -1374,7 +1441,7 @@ class _TimelineSection extends StatelessWidget {
                           child: Container(
                             width: 2,
                             margin: const EdgeInsets.symmetric(vertical: 4),
-                            color: _C.border,
+                            color: DriverColors.border,
                           ),
                         ),
                     ],
@@ -1388,14 +1455,14 @@ class _TimelineSection extends StatelessWidget {
                         children: [
                           Text(events[i].title,
                               style: const TextStyle(
-                                color: _C.textDark,
+                                color: DriverColors.textDark,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
                               )),
                           const SizedBox(height: 2),
                           Text(_dateTime.format(events[i].time),
                               style: const TextStyle(
-                                color: _C.textMuted,
+                                color: DriverColors.textMuted,
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w600,
                               )),
@@ -1403,7 +1470,7 @@ class _TimelineSection extends StatelessWidget {
                             const SizedBox(height: 2),
                             Text(events[i].subtitle,
                                 style: const TextStyle(
-                                    color: _C.textMuted, fontSize: 12.5)),
+                                    color: DriverColors.textMuted, fontSize: 12.5)),
                           ],
                         ],
                       ),

@@ -16,6 +16,7 @@ import '../../../../core/theme/admin_colors.dart';
 import '../widgets/admin_sidebar.dart';
 import '../widgets/admin_top_bar.dart';
 import 'admin_dashboard_screen.dart';
+import 'incident_screen.dart';
 
 /// StatefulWidget -> ConsumerStatefulWidget so the shell can read the
 /// logged-in admin and call logout. `_selectedIndex` stays local State —
@@ -39,6 +40,7 @@ class _AdminShellState extends ConsumerState<AdminShell> {
     AnalysisScreen(),
     UserDriverRequestScreen(),
     TripTicketLogScreen(),
+    IncidentScreen(),
     AdminSetupScreen(), // Destinations + Departments
     AdminSettingsScreen(),
     Center(
