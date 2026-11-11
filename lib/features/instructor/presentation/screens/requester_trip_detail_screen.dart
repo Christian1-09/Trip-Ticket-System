@@ -280,6 +280,7 @@ class _ActionBar extends ConsumerWidget {
       builder: (_) => RateDriverDialog(
         driverName: item.trip.driver.fullName,
         ticketNumber: item.trip.ticketNumber,
+        avatarUrl: item.trip.driver.avatarUrl,
       ),
     );
     if (result == null || !context.mounted) return;

@@ -92,12 +92,18 @@ class AdminPerson {
   final String? phone;
   final String? role;
 
+  /// Relative path from the server, e.g. "/uploads/avatars/abc.jpg".
+  /// Pass it through ApiConfig.mediaUrl(...) before loading — same as
+  /// AdminTripModel.vehicleImageUrl.
+  final String? avatarUrl;
+
   const AdminPerson({
     required this.id,
     required this.fullName,
     this.email,
     this.phone,
     this.role,
+    this.avatarUrl,
   });
 
   factory AdminPerson.fromJson(Map<String, dynamic>? json) {
@@ -108,6 +114,7 @@ class AdminPerson {
       email: json['email'] as String?,
       phone: json['phone'] as String?,
       role: json['role'] as String?,
+      avatarUrl: json['avatarUrl'] as String?,
     );
   }
 
